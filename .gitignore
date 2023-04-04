@@ -1,0 +1,6 @@
+# local environment
+.idea
+venv
+.pytest_cache
+.coverage
+/logs/

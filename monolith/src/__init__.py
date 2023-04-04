@@ -1,0 +1,1 @@
+# TODO: monolith FastAPI template 설정

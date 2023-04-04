@@ -1,0 +1,67 @@
+image: python:3.10-slim
+
+# List of stages for jobs, and their order of execution
+stages:
+  - build
+  - test
+  - deploy
+
+# Caching is shared between jobs
+# `$CI_PROJECT_DIR` is the environment variable for CI
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  MAJOR: "1"
+  PIPELINE_SEQUENCE: $CI_PIPELINE_IID  # project's pipeline id
+
+
+before_script:
+  - python3 -V  # Print out python version for debugging
+  - pip install poetry
+  - poetry -V
+  - poetry config virtualenvs.create false
+  - poetry install --no-root
+
+build-job:  # This job runs in the build stage, which runs first.
+  stage: build
+  script:
+    - poetry install --no-root
+
+unit-test-job:   # This job runs in the test stage.
+  stage: test    # It only starts when the job in the build stage completes successfully.
+  script:
+    - poetry run pytest
+
+lint-test-job:   # This job also runs in the test stage.
+  stage: test    # It can run at the same time as unit-test-job (in parallel).
+  script:
+    - which flake8
+    - poetry run flake8
+
+# This job runs in the deploy stage.
+deploy-gitlab-job:
+  image: docker:23.0.1  # To build a docker image, change the base image
+  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  services:
+    - docker:23.0.1-dind
+
+  variables:
+    # name of the container repository and semantic versioning
+    PROJECT_NAME: "keyword-analysis-fastapi-service"
+    MAJOR: "1"
+#    COMMIT_TIMESTAMP: $CI_COMMIT_TIMESTAMP  # 2012-09-20T11:50:22Z
+    PIPELINE_SEQUENCE: $CI_PIPELINE_IID  # project's pipeline id
+
+  # overwrite the default `before_script`. Python is not installed yet.
+  before_script:
+#    - YEAR_WEEK=`date -d $COMMIT_TIMESTAMP -D "%Y-%m-%dT%H:%M:%S%z" +"%y%U"`  # busybox date error. should be changed after fix
+    - YEAR_WEEK=`date +"%y%U"`  # busybox date
+    - SEM_VER=$MAJOR.$YEAR_WEEK.$PIPELINE_SEQUENCE
+    - IMAGE_TAG=$CI_REGISTRY_IMAGE/$PROJECT_NAME:$SEM_VER
+    - IMAGE_TAG_LATEST=$CI_REGISTRY_IMAGE/$PROJECT_NAME:latest
+  script:
+    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY  # log in with the deploy token
+    - docker build -t $IMAGE_TAG -t $IMAGE_TAG_LATEST .  # execute a Dockerfile
+    - docker push $IMAGE_TAG  # push the image into the container registry in GitLab
+    - docker push $IMAGE_TAG_LATEST
+  only:
+    - main
