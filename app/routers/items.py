@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Path, Body, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app import schemas, crud
+from app import crud
 from app.dependencies import get_token_header
 from app.exceptions import CustomHTTPError
 from app.dependencies import get_db
@@ -33,7 +33,7 @@ async def read_items():
 
 # 2. DB를 사용하는 경우
 @router.get("", response_model=APIResponseModel, response_class=JSONResponse)
-async def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def read_items_from_db(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return {"result": items}
 

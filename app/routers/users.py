@@ -7,9 +7,10 @@ from fastapi.responses import JSONResponse
 
 from app.models import APIResponseModel
 
-router = APIRouter()    # APIRouter 변수명은 원하는대로 설정 가능
+router = APIRouter()  # APIRouter 변수명은 원하는대로 설정 가능
 
 fake_users_db = [{"username": "Rick"}, {"username": "Morty"}]
+
 
 @router.get("/users", tags=["users"], response_model=APIResponseModel, response_class=JSONResponse)
 async def read_users():
