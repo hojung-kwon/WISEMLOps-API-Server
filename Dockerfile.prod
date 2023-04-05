@@ -11,10 +11,7 @@ ENV PATH="$POETRY_HOME/bin:$PATH"
 # Install libraries
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
     curl \
-    vim \
     tzdata
 
 # Install Poetry
@@ -33,7 +30,7 @@ COPY . .
 
 # Install the dependencies: poetry 가상 환경 생성 비활성화, 시스템 전역에 패키지 설치
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi
+    && poetry install --only main --no-interaction --no-ansi
 
 # Copy poetry
 COPY . .

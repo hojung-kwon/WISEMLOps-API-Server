@@ -21,7 +21,7 @@
 ### 2. Development Environment Setting
 1. 로컬 개발 환경에 `git clone ...` 
 2. Pycharm 을 열고 `open project ...`
-3. **Poetry** Setting 
+3. **Poetry** Setting (OR **venv** 사용)
    1. Poetry 설치 ([poetry docs](https://python-poetry.org/docs/#installation) 참고)
    2. **Add New Interpreter** 선택
    3. **Add Local Interpreter** 선택
@@ -43,6 +43,48 @@
 ## MSA
 > @tiangolo(FastAPI 개발자)가 제공하는 유형(ex. api, crud, 모델, 스키마)별로 파일을 구분하는 프로젝트 구조
 - 출처: https://fastapi.tiangolo.com/tutorial/bigger-applications/
+```python
+.
+├── app                  # "app" is a Python package
+│   ├── __init__.py      # 
+│   ├── main.py          # 
+│   ├── dependencies.py  # 
+│   ├── exceptions.py  # custom exception
+│   ├── models.py  # 
+│   ├── schemas.py  # 데이터베이스를 사용할 경우
+│   ├── database.py  # 데이터베이스를 사용할 경우
+│   ├── crud.py  # 데이터베이스를 사용할 경우
+│   └── routers          # (API Endpoints) "routers" is a "Python subpackage" 
+│   │   ├── __init__.py  # 
+│   │   ├── items.py     # 
+│   │   └── users.py     # 
+│   └── internal         # 
+│       ├── __init__.py  # 
+│       └── admin.py     # 
+│   └── src         # (Main Functions) "src" is a "Python subpackage"
+│       ├── __init__.py  # 
+├── tests                  # app directory architecture 에 맞게 unit test 구성
+│   ├── __init__.py      # 
+│   └── routers          # 
+│   │   ├── __init__.py  # 
+│   │   ├── test_items.py     # 
+│   │   └── test_users.py     # 
+│   └── internal         # 
+│       ├── __init__.py  # 
+│       └── test_admin.py     # 
+│   └── src         # 
+│       ├── __init__.py  #
+```
+
+- **routers**: API Endpoint. 작성한 API들은 `$HOME/app/main.py`에 router를 추가한다. (ex. `app.include_router(users.router)`)
+- **src**: 모듈 메인 기능
+- unit test
+  - 👉 유닛 테스트는 기본적으로 `$HOME/app`의 디렉토리 구조에 맞게 구성한다.
+  - 유닛 테스트 종류로는 기능 테스트, API 엔드포인트 테스트, Pydantic 모델 유효성 테스트, 보안 테스트가 있다.
+- **Dockerfile**
+  - `Dockerfile`(=Dockerfile.dev 역할): 개발을 위해 필요한 도구 및 라이브러리와 같은 추가적인 종속성을 설치하기 위한 라이브러리들이 설치된 환경
+  - `Dockerfile.prod`: 최종 제품을 배포하기 위해 필요한 것들만 포함한 환경
+
 
 ## Monolith
 > @tiangolo 가 제공하는 유형(예: api, crud, 모델, 스키마)별로 파일을 구분하는 프로젝트 구조는 범위가 적은 마이크로 서비스 또는 프로젝트에 적합하지만 많은 도메인이 있는 모놀리식에는 맞출 수 없다.
@@ -53,9 +95,9 @@
 ## 🚀 TODO
 - [ ] **monolith** 개발 (현재 디렉터리만 생성되어있어 사용 불가능) 
 - [ ] DB 적용한 API 동작 테스트
-- [ ] API token을 JWT token으로 설정
-- [ ] filtering, sorting, searching 기능을 query string으로 적용하기
-- [ ] 버전 관리 (버전별 URL 표기)
-- [ ] 링크 처리시 HATEOS를 이용한 링크 처리
+- [ ] Restful API 디자인 가이드: API token을 JWT token으로 설정
+- [ ] Restful API 디자인 가이드: filtering, sorting, searching 기능을 query string으로 적용하기
+- [ ] Restful API 디자인 가이드: 버전 관리 (버전별 URL 표기)
+- [ ] Restful API 디자인 가이드: 링크 처리시 HATEOS를 이용한 링크 처리
 - [ ] 에러 처리
 - [ ] ELK 로그
