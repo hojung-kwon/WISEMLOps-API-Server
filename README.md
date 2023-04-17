@@ -17,6 +17,7 @@
 3. **Group** 선택
 4. **wisenut/DE/테스트베드:Python FastAPI Template** 에서 **Use template** 선택
 5. _Project name, Project description (optional)_ 등을 작성하고 **Create project** 선택
+6. 🔴 **gitlab-ci Container Registry Deploy**를 위해 프로젝트 생성시 무조건 `Settings > Repository > Deploy tokens`에 **Name: gitlab+deploy-token** 으로 토큰 생성하기 🔴
 
 ### 2. Development Environment Setting
 1. 로컬 개발 환경에 `git clone ...` 
@@ -38,6 +39,7 @@
 - 해당 템플릿은 크게 **msa**와 **monlith** 두 가지로 나뉜다.
 - Default는 **msa**(`$HOME/app`)로 해당 템플릿을 그대로 사용하면 된다.
 - **monolith**를 사용할 경우, msa (`$HOME/app`, `$HOME/tests`)는 삭제하고 최상위 디렉터리인 monolith를 삭제 후 사용한다.
+- DB를 사용하지 않을 경우, 관련된 코드는 모두 삭제한다. (`crud.py`, `database.py`, `schemas.py` 등)
 
 
 ## MSA

@@ -7,14 +7,16 @@ from uvicorn import Config, Server
 from loguru import logger
 from fastapi import Depends, FastAPI, Request
 
-from app.dependencies import get_query_token, get_token_header
-from app.exceptions import CustomHTTPError
-from app.internal import admin
-from app.routers import items, users
+from dependencies import get_query_token, get_token_header
+from exceptions import CustomHTTPError
+from internal import admin
+from routers import items, users
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
 
+
+# sys.path.append('/path/to/dir')
 
 class InterceptHandler(logging.Handler):
     def emit(self, record):
@@ -48,19 +50,21 @@ def setup_logging():
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS}])
 
 
-def check_env_exist() -> None:
+def check_env_exist() -> bool:
     """
     설정이 필요한 환경변수가 세팅되어있는지 체크
-    필요한 환경변수가 없을 경우, 프로그램 종료
+    TODO: 필요한 환경변수가 없을 경우, 프로그램 종료
 
     Returns: None
 
     """
+    logging.info("Check env exist ...")
     env_list = []  # TODO: 확인할 환경변수 설정
     for env in env_list:
         if env not in os.environ.keys():
-            logging.error(f"set {env} environment variable.")
-            exit()
+            logging.warning(f"set {repr(env)} environment variable.")
+            return False
+    return True
 
 
 app = FastAPI(
@@ -108,6 +112,7 @@ async def notfound_handler(request: Request, exc: CustomHTTPError):
 @app.on_event("startup")
 async def startup_event():
     logging.info("Start Python FastAPI Template")
+    check_env_exist()
 
 
 @app.get("/")
@@ -116,7 +121,7 @@ async def root():
 
 
 @app.get("/health")
-def health():
+async def health():
     return {"status": "UP"}
 
 
@@ -133,6 +138,5 @@ if __name__ == "__main__":
     # setup logging last, to make sure no library overwrites it
     # (they shouldn't, but it happens)
     setup_logging()
-    check_env_exist()
     # uvicorn.run(app=app, host="0.0.0.0", port=8000, log_level=LOG_LEVEL)
     server.run()

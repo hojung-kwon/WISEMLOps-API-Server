@@ -10,21 +10,21 @@ from typing import Annotated
 from fastapi import Header
 from starlette import status
 
-from app import models
-from app.database import SessionLocal, engine
-from app.exceptions import CustomHTTPError
+import models
+from database import SessionLocal, engine
+from exceptions import CustomHTTPError
 
 DEFAULT_X_TOKEN = "fake-super-secret-token"
 DEFAULT_TOKEN = "default-token"
 
 
 async def get_token_header(x_token: Annotated[str, Header()]):
-    if x_token != "fake-super-secret-token":
+    if x_token != DEFAULT_X_TOKEN:
         raise CustomHTTPError(status_code=status.HTTP_400_BAD_REQUEST, detail="X-Token header invalid")
 
 
 async def get_query_token(token: str):
-    if token != "default-token":
+    if token != DEFAULT_TOKEN:
         raise CustomHTTPError(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token provided")
 
 
