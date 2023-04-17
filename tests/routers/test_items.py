@@ -5,7 +5,6 @@ from app.dependencies import DEFAULT_TOKEN, DEFAULT_X_TOKEN
 client = TestClient(app)
 
 
-
 def test_read_items():
     response = client.get("/items", params={"token": DEFAULT_TOKEN}, headers={"x-token": DEFAULT_X_TOKEN})
     assert response.status_code == 200
@@ -45,6 +44,7 @@ def test_update_item():
         }
     }
 
+
 def test_create_item():
     item = {
         "name": "apple",
@@ -56,4 +56,3 @@ def test_create_item():
     assert response.json()["result"]["item"]["name"] == item["name"]
     assert response.json()["result"]["item"]["status"] == item["status"]
     assert response.json()["result"]["item"]["stock"] == item["stock"]
-

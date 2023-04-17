@@ -1,9 +1,10 @@
-FROM python:3.10-slim
+FROM python:3.10.11-slim
 
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Seoul
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONIOENCODING=utf-8
 ENV POETRY_HOME=/opt/poetry
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 ENV PATH="$POETRY_HOME/bin:$PATH"
@@ -12,7 +13,6 @@ ENV PATH="$POETRY_HOME/bin:$PATH"
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
-    libpq-dev \
     curl \
     vim \
     tzdata
@@ -26,7 +26,9 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.1 python3 -
 #USER wisenut
 
 # Set the working directory
-WORKDIR /home/wisenut/app
+WORKDIR /home/wisenut/apps
+
+ENV PYTHONPATH=/home/wisenut/apps:${PYTHONPATH}
 
 # copy src. see .dockerignore
 COPY . .
@@ -42,4 +44,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "app/main.py"]
