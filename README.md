@@ -35,11 +35,22 @@
 4. 로컬 구동 (`$HOME/main.py`) or `docker build ...` && `docker run -d -p ...` 로 컨테이너 빌드 & 구동
 5. `http :8000/openapi.json` or _http://localhost:8000/docs_ 로 API 명세 확인 및 테스트
 
+### 3. Extra Setting
+- ❗❗❗ 도커 빌드 및 실행할 경우, `version.py` 실행 사전 작업 필수 ❗❗❗    
+  👉 `version_info.py` 정보 생성 과정
+  ```python
+  version: str = 'V1.9e33312'
+  git_branch: str = 'minimal-refactoring'
+  git_revision: str = '9e333123aa56235bb0dc81f0a11e53d204cbe68f'
+  git_short_revision: str = '9e33312'
+  build_date: str = '2023-05-02 11:09:51'
+  ```
+
 ### 📚 참고 사항 📚   
 - 해당 템플릿은 크게 **msa**와 **monlith** 두 가지로 나뉜다.
 - Default는 **msa**(`$HOME/app`)로 해당 템플릿을 그대로 사용하면 된다.
-- **monolith**를 사용할 경우, msa (`$HOME/app`, `$HOME/tests`)는 삭제하고 최상위 디렉터리인 monolith를 삭제 후 사용한다.
-- DB를 사용하지 않을 경우, 관련된 코드는 모두 삭제한다. (`crud.py`, `database.py`, `schemas.py` 등)
+- 📌 **monolith**를 사용할 경우, msa (`$HOME/app`, `$HOME/tests`)는 삭제하고 최상위 디렉터리인 monolith를 삭제 후 사용한다.
+- 📌 DB를 사용하지 않을 경우, 관련된 코드는 모두 삭제한다. (`crud.py`, `database.py`, `schemas.py` 등)
 
 
 ## MSA
@@ -85,7 +96,7 @@
   - 유닛 테스트 종류로는 기능 테스트, API 엔드포인트 테스트, Pydantic 모델 유효성 테스트, 보안 테스트가 있다.
 - **Dockerfile**
   - `Dockerfile`(=Dockerfile.dev 역할): 개발을 위해 필요한 도구 및 라이브러리와 같은 추가적인 종속성을 설치하기 위한 라이브러리들이 설치된 환경
-  - `Dockerfile.prod`: 최종 제품을 배포하기 위해 필요한 것들만 포함한 환경
+  - `product.Dockerfile`: 최종 제품을 배포하기 위해 필요한 것들만 포함한 환경
 
 
 ## Monolith

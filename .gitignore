@@ -4,3 +4,5 @@ venv
 .pytest_cache
 .coverage
 /logs/
+app/version_info.py
+app/sql_app.db
