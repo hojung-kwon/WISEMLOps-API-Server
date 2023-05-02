@@ -1,12 +1,14 @@
 import os
 import logging
 import sys
+from contextlib import asynccontextmanager
 
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
 from loguru import logger
 from fastapi import Depends, FastAPI, Request
 
+from app.version import get_version_info, write_version_py
 from dependencies import get_query_token, get_token_header
 from exceptions import CustomHTTPError
 from internal import admin
@@ -15,8 +17,6 @@ from routers import items, users
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
 
-
-# sys.path.append('/path/to/dir')
 
 class InterceptHandler(logging.Handler):
     def emit(self, record):
@@ -50,7 +50,7 @@ def setup_logging():
     logger.configure(handlers=[{"sink": sys.stdout, "serialize": JSON_LOGS}])
 
 
-def check_env_exist() -> bool:
+def check_env_exist() -> None:
     """
     설정이 필요한 환경변수가 세팅되어있는지 체크
     TODO: 필요한 환경변수가 없을 경우, 프로그램 종료
@@ -58,19 +58,29 @@ def check_env_exist() -> bool:
     Returns: None
 
     """
-    logging.info("Check env exist ...")
-    env_list = []  # TODO: 확인할 환경변수 설정
+    env_list = ['CHECK_ENV']  # TODO: 확인할 환경변수 설정
     for env in env_list:
         if env not in os.environ.keys():
             logging.warning(f"set {repr(env)} environment variable.")
-            return False
-    return True
+
+
+@asynccontextmanager
+async def lifespan(lifespan_app: FastAPI):
+    # startup event
+    logging.info("Start Python FastAPI Template")
+    logging.info("Check env exist ...")
+    check_env_exist()
+    write_version_py()
+    yield
+    # shutdown event
+    logging.info("Shut down Python FastAPI Template")
 
 
 app = FastAPI(
+    lifespan=lifespan,
     title="Python FastAPI Template",
     description="DE Team Python FastAPI Template",
-    version="1.0.0",
+    version="0.1.2",
     dependencies=[Depends(get_query_token)]
 )
 
@@ -109,12 +119,6 @@ async def notfound_handler(request: Request, exc: CustomHTTPError):
                         content={"code": exc.status_code, "message": f"{exc.detail}"})
 
 
-@app.on_event("startup")
-async def startup_event():
-    logging.info("Start Python FastAPI Template")
-    check_env_exist()
-
-
 @app.get("/")
 async def root():
     return {"title": app.title, "description": app.description, "version": app.version, "docs_url": app.docs_url}
@@ -123,6 +127,18 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "UP"}
+
+
+@app.get("/info")
+async def info():
+    VERSION, GIT_REVISION, GIT_SHORT_REVISION, GIT_BRANCH, BUILD_DATE = get_version_info()
+    return {
+        "version": VERSION,
+        "git_branch": GIT_BRANCH,
+        "git_revision": GIT_REVISION,
+        "git_short_revision": GIT_SHORT_REVISION,
+        "build_date": BUILD_DATE
+    }
 
 
 if __name__ == "__main__":

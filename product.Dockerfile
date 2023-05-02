@@ -8,6 +8,7 @@ ENV PYTHONIOENCODING=utf-8
 ENV POETRY_HOME=/opt/poetry
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 ENV PATH="$POETRY_HOME/bin:$PATH"
+ENV LOG_LEVEL=INFO
 
 # Install libraries
 RUN apt-get update && \
