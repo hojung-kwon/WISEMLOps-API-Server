@@ -9,10 +9,10 @@ from loguru import logger
 from fastapi import Depends, FastAPI, Request
 
 from app.version import get_version_info, write_version_py
-from dependencies import get_query_token, get_token_header
+from dependencies import get_token_header
 from exceptions import CustomHTTPError
 from internal import admin
-from routers import items, users
+from routers import items, users, cluster
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -81,9 +81,10 @@ app = FastAPI(
     title="Python FastAPI Template",
     description="DE Team Python FastAPI Template",
     version="0.1.2",
-    dependencies=[Depends(get_query_token)]
+    # dependencies=[Depends(get_query_token)]
 )
 
+app.include_router(cluster.router)
 app.include_router(users.router)
 app.include_router(items.router)
 app.include_router(

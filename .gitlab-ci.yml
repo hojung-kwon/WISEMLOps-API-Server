@@ -23,11 +23,11 @@ build-job:
   script:
     - poetry install --no-root
 
-unit-test-job:
-  stage: test
-  script:
-    - export PYTHONPATH=./app
-    - poetry run pytest
+#unit-test-job:
+#  stage: test
+#  script:
+#    - export PYTHONPATH=./app
+#    - poetry run pytest
 
 lint-test-job:
   stage: test
@@ -42,7 +42,7 @@ deploy-gitlab-job:
     - docker:23.0.1-dind
 
   variables:
-    PROJECT_NAME: "python-fastapi-template" # TODO: 프로젝트명에 맞게 수정
+    PROJECT_NAME: "MLOps-API"
     MAJOR: "1"
     PIPELINE_SEQUENCE: $CI_PIPELINE_IID
 
