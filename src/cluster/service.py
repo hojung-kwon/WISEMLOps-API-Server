@@ -1,7 +1,7 @@
 import ssl
 
 from kubernetes import client
-from src.cluster.client import create_client, create_custom_api, template_pv
+from src.cluster.client import create_client, create_custom_api, template_pv, template_namespace
 from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -21,13 +21,6 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def get_pods(self, namespace: str = 'default'):
-        try:
-            result = self.cluster_client.list_namespaced_pod(namespace=namespace)
-            return response(result)
-        except client.ApiException as e:
-            return error_with_message(e)
-
     def get_namespaces(self):
         try:
             result = self.cluster_client.list_namespace()
@@ -35,17 +28,19 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def get_services(self, namespace: str = 'default'):
+    def create_namespace(self, namespace: str, labels: dict = None, istio: bool = False):
         try:
-            result = self.cluster_client.list_namespaced_service(namespace=namespace)
-            return response(result)
+            labels['istio-injection'] = 'enabled' if istio else 'disabled'
+            body = template_namespace(namespace, labels)
+            result = self.cluster_client.create_namespace(body=body)
+            return response(result, success_with_no_content)
         except client.ApiException as e:
             return error_with_message(e)
 
-    def get_secrets(self, namespace: str = 'default'):
+    def delete_namespace(self, namespace: str):
         try:
-            result = self.cluster_client.list_namespaced_secret(namespace=namespace)
-            return response(result)
+            result = self.cluster_client.delete_namespace(name=namespace)
+            return response(result, success_with_no_content)
         except client.ApiException as e:
             return error_with_message(e)
 
@@ -71,6 +66,20 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
+    def get_services(self, namespace: str = 'default'):
+        try:
+            result = self.cluster_client.list_namespaced_service(namespace=namespace)
+            return response(result)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def get_secrets(self, namespace: str = 'default'):
+        try:
+            result = self.cluster_client.list_namespaced_secret(namespace=namespace)
+            return response(result)
+        except client.ApiException as e:
+            return error_with_message(e)
+
     def get_volume_claims(self, namespace: str = 'default'):
         try:
             result = self.cluster_client.list_namespaced_persistent_volume_claim(namespace=namespace)
@@ -85,19 +94,10 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def create_namespace(self, namespace: str):
+    def get_pods(self, namespace: str = 'default'):
         try:
-            body = client.V1Namespace()
-            body.metadata = client.V1ObjectMeta(name=namespace)
-            result = self.cluster_client.create_namespace(body=body)
-            return response(result, success_with_no_content)
-        except client.ApiException as e:
-            return error_with_message(e)
-
-    def delete_namespace(self, namespace: str):
-        try:
-            result = self.cluster_client.delete_namespace(name=namespace)
-            return response(result, success_with_no_content)
+            result = self.cluster_client.list_namespaced_pod(namespace=namespace)
+            return response(result)
         except client.ApiException as e:
             return error_with_message(e)
 

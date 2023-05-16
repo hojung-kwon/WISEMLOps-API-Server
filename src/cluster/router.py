@@ -15,6 +15,21 @@ async def get_nodes():
     return cluster_service.get_nodes()
 
 
+@router.get("/namespaces", tags=["namespace"], response_model=APIResponseModel)
+async def get_namespaces():
+    return cluster_service.get_namespaces()
+
+
+@router.post("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
+async def create_namespace(namespace: str, labels: dict = None, istio: bool = False):
+    return cluster_service.create_namespace(namespace, labels, istio)
+
+
+@router.delete("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
+async def delete_namespace(namespace: str):
+    return cluster_service.delete_namespace(namespace)
+
+
 @router.get("/volumes", tags=["volume"], response_model=APIResponseModel)
 async def get_volumes():
     return cluster_service.get_volumes()
@@ -35,11 +50,6 @@ async def create_volume(
 @router.delete("/volumes/{name}", tags=["volume"], response_model=APIResponseModel)
 async def delete_volume(name: str):
     return cluster_service.delete_volume(name)
-
-
-@router.get("/namespaces", tags=["namespace"], response_model=APIResponseModel)
-async def get_namespaces():
-    return cluster_service.get_namespaces()
 
 
 @router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)
@@ -67,11 +77,3 @@ async def get_config_maps(namespace: str = 'default'):
     return cluster_service.get_config_maps(namespace)
 
 
-@router.post("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
-async def create_namespace(namespace: str):
-    return cluster_service.create_namespace(namespace)
-
-
-@router.delete("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
-async def delete_namespace(namespace: str):
-    return cluster_service.delete_namespace(namespace)
