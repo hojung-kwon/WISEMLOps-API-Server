@@ -10,9 +10,9 @@ from typing import Annotated
 from fastapi import Header
 from starlette import status
 
-import models
-from database import SessionLocal, engine
-from exceptions import CustomHTTPError
+from src import models
+from src.database import SessionLocal, engine
+from src.exceptions import CustomHTTPError
 
 DEFAULT_X_TOKEN = "fake-super-secret-token"
 DEFAULT_TOKEN = "default-token"

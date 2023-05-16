@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
-from app.dependencies import DEFAULT_TOKEN, DEFAULT_X_TOKEN
-from app.main import app
+from src.dependencies import DEFAULT_TOKEN, DEFAULT_X_TOKEN
+from src.main import app
 
 client = TestClient(app)
 

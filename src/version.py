@@ -90,7 +90,7 @@ build_date: str = '{build_date}'
 
 def get_version_info():
     try:
-        import app.version_info as git_info
+        import src.version_info as git_info
     except ImportError as ie:
         logging.error(f"{ie}: Check if 'app.version_info' exists.")
 
