@@ -6,13 +6,11 @@ from contextlib import asynccontextmanager
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
 from loguru import logger
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI, Request
 
-from app.version import get_version_info, write_version_py
-from dependencies import get_token_header
-from exceptions import CustomHTTPError
-from internal import admin
-from routers import items, users, cluster
+from src.version import get_version_info, write_version_py
+from src.exceptions import CustomHTTPError
+from src.cluster import router as cluster_router
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -79,21 +77,12 @@ async def lifespan(lifespan_app: FastAPI):
 app = FastAPI(
     lifespan=lifespan,
     title="Python FastAPI Template",
-    description="DE Team Python FastAPI Template",
-    version="0.1.2",
+    description="ML Ops Python FastAPI Template",
+    version="0.0.1",
     # dependencies=[Depends(get_query_token)]
 )
 
-app.include_router(cluster.router)
-app.include_router(users.router)
-app.include_router(items.router)
-app.include_router(
-    admin.router,  # app/internal/admin.py 원본을 수정하지 않고 선언 가능
-    prefix="/admin",
-    tags=["admin"],
-    dependencies=[Depends(get_token_header)],
-    responses={418: {"description": "I'm a teapot"}},
-)
+app.include_router(cluster_router.router)
 
 
 @app.exception_handler(CustomHTTPError)
