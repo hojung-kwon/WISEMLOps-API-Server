@@ -1,11 +1,16 @@
 from kubernetes import client
 import os
 
-currentPath = os.getcwd()
-packagePath = '\\cluster\\'
+# 클러스터 환경 변수
+_currentPath = os.getcwd()
+_packagePath = '\\cluster\\'
 CLUSTER_URL = 'https://211.39.140.43:6443'
-BEARER_TOKEN_FILE = open(currentPath + packagePath + 'bearer_token').read()
-CA_CERT_PATH = currentPath + packagePath + 'k8s-ca.cert'
+BEARER_TOKEN_FILE = open(_currentPath + _packagePath + 'bearer_token').read()
+CA_CERT_PATH = _currentPath + _packagePath + 'k8s-ca.cert'
+
+# NFS 환경 변수
+VOLUME_NFS_SERVER = '211.39.140.43'
+VOLUME_NFS_PATH = '/home/wisenut/nfs4share'
 
 
 def _create_config(ssl_ca_cert_path, bearer_token_file, cluster_url):
@@ -20,4 +25,4 @@ def _create_config(ssl_ca_cert_path, bearer_token_file, cluster_url):
     return _config
 
 
-cluster_config = _create_config(CA_CERT_PATH, BEARER_TOKEN_FILE, CLUSTER_URL)
+CLUSTER_CONFIG = _create_config(CA_CERT_PATH, BEARER_TOKEN_FILE, CLUSTER_URL)

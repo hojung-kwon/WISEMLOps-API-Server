@@ -1,18 +1,17 @@
+import ssl
+
 from kubernetes import client
-from src.cluster.config import cluster_config
-from src.cluster.client import create_client, create_custom_api
-from src.cluster.exceptions import ClusterException
+from src.cluster.client import create_client, create_custom_api, template_pv
 from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list
 
-import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
 class ClusterService:
-    def __init__(self, _cluster_config: cluster_config):
+    def __init__(self):
         # Kubernetes API 클라이언트 생성
-        self.cluster_client = create_client(_cluster_config)
-        self.cluster_crd_client = create_custom_api(_cluster_config)
+        self.cluster_client = create_client()
+        self.cluster_crd_client = create_custom_api()
         pass
 
     def get_nodes(self):
@@ -57,6 +56,21 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
+    def create_volume(self, name, size, volume_mode, access_mode, storage_class, policy, volume_type):
+        try:
+            body = template_pv(name, size, volume_mode, access_mode, storage_class, policy, volume_type)
+            result = self.cluster_client.create_persistent_volume(body=body)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def delete_volume(self, name):
+        try:
+            result = self.cluster_client.delete_persistent_volume(name=name)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
     def get_volume_claims(self, namespace: str = 'default'):
         try:
             result = self.cluster_client.list_namespaced_persistent_volume_claim(namespace=namespace)
@@ -88,4 +102,4 @@ class ClusterService:
             return error_with_message(e)
 
 
-cluster_service = ClusterService(cluster_config)
+cluster_service = ClusterService()
