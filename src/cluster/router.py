@@ -20,6 +20,23 @@ async def get_volumes():
     return cluster_service.get_volumes()
 
 
+@router.post("/volumes", tags=["volume"], response_model=APIResponseModel)
+async def create_volume(
+        name: str,
+        size: str = '3Gi',
+        volume_mode: str = 'Filesystem',
+        access_mode: str = 'ReadWriteOnce',
+        storage_class: str = 'default-storage-class',
+        policy: str = 'Delete',
+        volume_type: str = 'nfs'):
+    return cluster_service.create_volume(name, size, volume_mode, access_mode, storage_class, policy, volume_type)
+
+
+@router.delete("/volumes/{name}", tags=["volume"], response_model=APIResponseModel)
+async def delete_volume(name: str):
+    return cluster_service.delete_volume(name)
+
+
 @router.get("/namespaces", tags=["namespace"], response_model=APIResponseModel)
 async def get_namespaces():
     return cluster_service.get_namespaces()

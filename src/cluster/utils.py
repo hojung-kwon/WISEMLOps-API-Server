@@ -1,6 +1,5 @@
 import json
-
-from src.cluster.exceptions import ClusterException
+from kubernetes import client
 from src.models import APIResponseModel
 
 
@@ -12,9 +11,9 @@ def success_with_no_content(items):
     return {"result": ['no content']}
 
 
-def error_with_message(exception: ClusterException):
-    body = json.loads(exception.body)
-    return APIResponseModel(code=body['code'], result=body['status'], message=body['reason'])
+def error_with_message(e: client.ApiException):
+    body = json.loads(e.body)
+    return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
 
 
 def response(model, shape_callable: callable = success_with_name_list):
