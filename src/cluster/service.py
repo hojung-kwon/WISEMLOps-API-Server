@@ -44,6 +44,15 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
+    def update_namespace(self, namespace: str, labels: dict = None, istio: bool = False):
+        try:
+            labels['istio-injection'] = 'enabled' if istio else 'disabled'
+            body = template_namespace(namespace, labels)
+            result = self.cluster_client.patch_namespace(name=namespace, body=body)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
     def get_volumes(self):
         try:
             result = self.cluster_client.list_persistent_volume()

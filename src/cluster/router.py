@@ -30,6 +30,11 @@ async def delete_namespace(namespace: str):
     return cluster_service.delete_namespace(namespace)
 
 
+@router.patch("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
+async def update_namespace(namespace: str, labels: dict = None, istio: bool = False):
+    return cluster_service.update_namespace(namespace, labels, istio)
+
+
 @router.get("/volumes", tags=["volume"], response_model=APIResponseModel)
 async def get_volumes():
     return cluster_service.get_volumes()
