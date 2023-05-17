@@ -3,7 +3,8 @@ import ssl
 from kubernetes import client
 from src.cluster.client import create_client, create_custom_api, template_pv, template_namespace
 from src.cluster.models import PersistentVolume
-from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list
+from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list, \
+    success_with_node_status
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -18,7 +19,7 @@ class ClusterService:
     def get_nodes(self):
         try:
             result = self.cluster_client.list_node()
-            return response(result)
+            return response(result, success_with_node_status)
         except client.ApiException as e:
             return error_with_message(e)
 
