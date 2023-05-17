@@ -10,7 +10,6 @@ variables:
   MAJOR: "1"
   PIPELINE_SEQUENCE: $CI_PIPELINE_IID
 
-
 before_script:
   - python3 -V
   - pip install poetry
@@ -47,14 +46,12 @@ deploy-gitlab-job:
     PIPELINE_SEQUENCE: $CI_PIPELINE_IID
 
   before_script:
-    - YEAR_WEEK=`date +"%y%U"`
-    - SEM_VER=$MAJOR.$YEAR_WEEK.$PIPELINE_SEQUENCE
-    - IMAGE_TAG=$CI_REGISTRY_IMAGE/$PROJECT_NAME:$SEM_VER
-    - IMAGE_TAG_LATEST=$CI_REGISTRY_IMAGE/$PROJECT_NAME:latest
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
   script:
-    - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
-    - docker build -t $IMAGE_TAG -t $IMAGE_TAG_LATEST .
-    - docker push $IMAGE_TAG
-    - docker push $IMAGE_TAG_LATEST
+    - pwd
+    - docker build -t $CI_REGISTRY_IMAGE/mlops-api:$CI_COMMIT_SHORT_SHA  .
+    - docker push $CI_REGISTRY_IMAGE/mlops-api:$CI_COMMIT_SHORT_SHA
+
   only:
     - main
+    - deploy
