@@ -1,5 +1,6 @@
 from kubernetes import client
 from src.cluster.config import load_config, create_config
+from src.cluster.models import PersistentVolume
 from src.config import app_config
 
 
@@ -35,24 +36,24 @@ def template_namespace(namespace: str, labels=None):
 
 def get_nfs_volume():
     return client.V1NFSVolumeSource(
-        server=app_config.VOLUME_NFS_SERVER,
-        path=app_config.VOLUME_NFS_PATH,
+        server=app_config.CLUSTER_VOLUME_NFS_SERVER,
+        path=app_config.CLUSTER_VOLUME_NFS_PATH,
         read_only=False
     )
 
 
-def template_pv(name, size, volume_mode, access_mode, storage_class, policy, volume_type):
+def template_pv(pv: PersistentVolume):
     _volume = client.V1PersistentVolume(
         api_version='v1', kind='PersistentVolume',
-        metadata=client.V1ObjectMeta(name=name),
+        metadata=client.V1ObjectMeta(name=pv.name),
         spec=client.V1PersistentVolumeSpec(
-            capacity={'storage': size},
-            volume_mode=volume_mode,
-            access_modes=[access_mode],
-            storage_class_name=storage_class,
-            persistent_volume_reclaim_policy=policy,
+            capacity={'storage': pv.size},
+            volume_mode=pv.volume_mode,
+            access_modes=[pv.access_mode],
+            storage_class_name=pv.storage_class,
+            persistent_volume_reclaim_policy=pv.policy,
         )
     )
-    if volume_type == 'nfs':
+    if pv.volume_type == 'nfs':
         _volume.spec.nfs = get_nfs_volume()
     return _volume
