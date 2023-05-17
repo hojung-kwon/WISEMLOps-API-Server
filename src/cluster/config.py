@@ -1,26 +1,19 @@
-from kubernetes import client
-import os
-
-# 클러스터 환경 변수
-CLUSTER_URL = 'https://211.39.140.43:6443'
-BEARER_TOKEN_FILE = open(os.environ['CERTS_PATH'] + 'bearer_token').read()
-CA_CERT_PATH = os.environ['CERTS_PATH'] + 'k8s-ca.cert'
-
-# NFS 환경 변수
-VOLUME_NFS_SERVER = '211.39.140.43'
-VOLUME_NFS_PATH = '/home/wisenut/nfs4share'
+from kubernetes import client, config
+from src.config import app_config
 
 
-def _create_config(ssl_ca_cert_path, bearer_token_file, cluster_url):
+def create_config():
     # Kubernetes 클러스터 구성 가져오기
     _config = client.Configuration()
-    _config.host = cluster_url
-    _config.api_key['authorization'] = bearer_token_file
+    _config.host = app_config.CLUSTER_HOST
+    _config.api_key['authorization'] = app_config.CLUSTER_BEARER_TOKEN_PATH
     _config.api_key_prefix['authorization'] = 'Bearer'
-    _config.ssl_ca_cert = ssl_ca_cert_path
+    _config.ssl_ca_cert = app_config.CLUSTER_CA_CERT_PATH
     _config.verify_ssl = True
 
     return _config
 
 
-CLUSTER_CONFIG = _create_config(CA_CERT_PATH, BEARER_TOKEN_FILE, CLUSTER_URL)
+def load_config():
+    config.load_kube_config(config_file=app_config.CLUSTER_KUBE_CONFIG_PATH)
+    return None
