@@ -3,6 +3,7 @@ import logging
 import sys
 from contextlib import asynccontextmanager
 
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
 from loguru import logger
@@ -85,6 +86,17 @@ app = FastAPI(
 
 app.include_router(cluster_router.router)
 app.include_router(minio_router.router)
+
+origins = [
+    "*"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(CustomHTTPError)
