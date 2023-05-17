@@ -2,6 +2,7 @@ import ssl
 
 from kubernetes import client
 from src.cluster.client import create_client, create_custom_api, template_pv, template_namespace
+from src.cluster.models import PersistentVolume
 from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -60,9 +61,9 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def create_volume(self, name, size, volume_mode, access_mode, storage_class, policy, volume_type):
+    def create_volume(self, pv: PersistentVolume):
         try:
-            body = template_pv(name, size, volume_mode, access_mode, storage_class, policy, volume_type)
+            body = template_pv(pv)
             result = self.cluster_client.create_persistent_volume(body=body)
             return response(result, success_with_no_content)
         except client.ApiException as e:

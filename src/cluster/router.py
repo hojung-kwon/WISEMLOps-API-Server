@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from src.models import APIResponseModel
 from src.cluster.service import cluster_service
+from src.cluster.models import PersistentVolume
 
 router = APIRouter(
     prefix="/cluster",
@@ -41,20 +42,30 @@ async def get_volumes():
 
 
 @router.post("/volumes", tags=["volume"], response_model=APIResponseModel)
-async def create_volume(
-        name: str,
-        size: str = '3Gi',
-        volume_mode: str = 'Filesystem',
-        access_mode: str = 'ReadWriteOnce',
-        storage_class: str = 'default-storage-class',
-        policy: str = 'Delete',
-        volume_type: str = 'nfs'):
-    return cluster_service.create_volume(name, size, volume_mode, access_mode, storage_class, policy, volume_type)
+async def create_volume(pv: PersistentVolume):
+    return cluster_service.create_volume(pv)
 
 
 @router.delete("/volumes/{name}", tags=["volume"], response_model=APIResponseModel)
 async def delete_volume(name: str):
     return cluster_service.delete_volume(name)
+
+
+@router.get("/namespaces/{namespace}/volumeclaims", tags=["volumeclaim"], response_model=APIResponseModel)
+async def get_volume_claims(namespace: str = 'default'):
+    return cluster_service.get_volume_claims(namespace)
+
+
+@router.post("/namespaces/{namespace}/volumeclaims", tags=["volumeclaim"], response_model=APIResponseModel)
+async def create_volume_claim(
+        namespace: str,
+        name: str,
+        size: str = '3Gi',
+        volume_mode: str = 'Filesystem',
+        access_mode: str = 'ReadWriteOnce',
+        storage_class: str = 'default-storage-class',
+        volume_name: str = None):
+    return cluster_service.create_volume_claim(namespace, name, size, volume_mode, access_mode, storage_class, volume_name)
 
 
 @router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)
@@ -70,11 +81,6 @@ async def get_secrets(namespace: str = 'default'):
 @router.get("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)
 async def get_list_namespaced_pod(namespace: str = 'default'):
     return cluster_service.get_pods(namespace)
-
-
-@router.get("/namespaces/{namespace}/volumeclaims", tags=["volumeclaim"], response_model=APIResponseModel)
-async def get_volume_claims(namespace: str = 'default'):
-    return cluster_service.get_volume_claims(namespace)
 
 
 @router.get("/namespaces/{namespace}/configmaps", tags=["configmap"], response_model=APIResponseModel)
