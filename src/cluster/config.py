@@ -2,11 +2,9 @@ from kubernetes import client
 import os
 
 # 클러스터 환경 변수
-_currentPath = os.getcwd()
-_packagePath = '\\cluster\\'
 CLUSTER_URL = 'https://211.39.140.43:6443'
-BEARER_TOKEN_FILE = open(_currentPath + _packagePath + 'bearer_token').read()
-CA_CERT_PATH = _currentPath + _packagePath + 'k8s-ca.cert'
+BEARER_TOKEN_FILE = open(os.environ['CERTS_PATH'] + 'bearer_token').read()
+CA_CERT_PATH = os.environ['CERTS_PATH'] + 'k8s-ca.cert'
 
 # NFS 환경 변수
 VOLUME_NFS_SERVER = '211.39.140.43'

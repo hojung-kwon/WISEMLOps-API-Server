@@ -5,41 +5,26 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Seoul
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
-ENV POETRY_HOME=/opt/poetry
-ENV POETRY_VIRTUALENVS_IN_PROJECT=true
-ENV PATH="$POETRY_HOME/bin:$PATH"
 ENV LOG_LEVEL=DEBUG
 
-# Install libraries
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    vim \
-    tzdata
-
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.4.1 python3 -
-
-# Set the working directory
+# 작업 디렉토리 설정
 WORKDIR /home/wisenut/app
 
+# Certs 경로 설정
+ENV CERTS_PATH=/home/wisenut/app/certs/
+
+# 파이썬 실행 위치
 ENV PYTHONPATH=/home/wisenut/app:${PYTHONPATH}
 
-# Copy pyproject.toml
-COPY pyproject.toml .
+# 필요한 파일 복사
+COPY requirements.txt .
+COPY ./src ./src/
 
-# Install the dependencies: poetry 가상 환경 생성 비활성화, 시스템 전역에 패키지 설치
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-cache
-
-# Copy all
-COPY . .
+# 패키지 설치
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Expose the port
 EXPOSE 8000
 
-WORKDIR /home/wisenut/app/app
-
 # Run the app
-CMD ["python", "main.py"]
+CMD ["python", "src/main.py"]
