@@ -67,8 +67,8 @@ def check_env_exist() -> None:
 async def lifespan(lifespan_app: FastAPI):
     # startup event
     logging.info("Start Python FastAPI Template")
-    logging.info("Check env exist ...")
-    check_env_exist()
+    # logging.info("Check env exist ...")
+    # check_env_exist()
     write_version_py()
     yield
     # shutdown event

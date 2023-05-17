@@ -7,17 +7,18 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 ENV LOG_LEVEL=DEBUG
 
+# 실행환경 설정
+ENV APP_ENV=container
+
 # 작업 디렉토리 설정
 WORKDIR /home/wisenut/app
-
-# Certs 경로 설정
-ENV CERTS_PATH=/home/wisenut/app/certs/
 
 # 파이썬 실행 위치
 ENV PYTHONPATH=/home/wisenut/app:${PYTHONPATH}
 
 # 필요한 파일 복사
 COPY requirements.txt .
+COPY ./application.yaml .
 COPY ./src ./src/
 
 # 패키지 설치

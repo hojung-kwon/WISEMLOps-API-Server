@@ -1,13 +1,22 @@
 from kubernetes import client
-from src.cluster.config import VOLUME_NFS_SERVER, VOLUME_NFS_PATH, CLUSTER_CONFIG
+from src.cluster.config import load_config, create_config
+from src.config import app_config
 
 
-def create_client():
-    return client.CoreV1Api(api_client=client.ApiClient(CLUSTER_CONFIG))
+def create_client(with_token: bool = False):
+    if with_token:
+        return client.CoreV1Api(api_client=client.ApiClient(create_config()))
+    else:
+        load_config()
+        return client.CoreV1Api()
 
 
-def create_custom_api():
-    return client.CustomObjectsApi(api_client=client.ApiClient(CLUSTER_CONFIG))
+def create_custom_api(with_token: bool = False):
+    if with_token:
+        return client.CustomObjectsApi(api_client=client.ApiClient(create_config()))
+    else:
+        load_config()
+        return client.CustomObjectsApi()
 
 
 def template_metadata(name: str, namespace: str = 'default', labels=None):
@@ -26,8 +35,8 @@ def template_namespace(namespace: str, labels=None):
 
 def get_nfs_volume():
     return client.V1NFSVolumeSource(
-        server=VOLUME_NFS_SERVER,
-        path=VOLUME_NFS_PATH,
+        server=app_config.VOLUME_NFS_SERVER,
+        path=app_config.VOLUME_NFS_PATH,
         read_only=False
     )
 
