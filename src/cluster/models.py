@@ -1,11 +1,18 @@
 from pydantic import BaseModel
 
 
-class PersistentVolume(BaseModel):
+class Volume(BaseModel):
     name: str
-    size: str = '3Gi'
-    volume_mode: str = 'Filesystem'
-    access_mode: str = 'ReadWriteOnce'
     storage_class: str = 'default-storage-class'
+    storage_size: str = '3Gi'
+    access_mode: str = 'ReadWriteOnce'
+    volume_mode: str = 'Filesystem'
     policy: str = 'Delete'
     volume_type: str = 'nfs'
+
+
+class VolumeClaim(BaseModel):
+    name: str
+    storage_class: str = 'default-storage-class'
+    storage_size: str = '3Gi'
+    access_mode: str = 'ReadWriteOnce'
