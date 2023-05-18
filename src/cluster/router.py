@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from src.models import APIResponseModel
 from src.cluster.service import cluster_service
-from src.cluster.models import Volume, VolumeClaim, ConfigMap
+from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret
 
 router = APIRouter(
     prefix="/cluster",
@@ -84,6 +84,16 @@ async def delete_config_map(namespace: str, name: str):
 @router.get("/namespaces/{namespace}/secrets", tags=["secret"], response_model=APIResponseModel)
 async def get_secrets(namespace: str = 'default'):
     return cluster_service.get_secrets(namespace)
+
+
+@router.post("/namespaces/{namespace}/secrets", tags=["secret"], response_model=APIResponseModel)
+async def create_secret(namespace: str, secret: Secret):
+    return cluster_service.create_secret(namespace, secret)
+
+
+@router.delete("/namespaces/{namespace}/secrets/{name}", tags=["secret"], response_model=APIResponseModel)
+async def delete_secret(namespace: str, name: str):
+    return cluster_service.delete_secret(namespace, name)
 
 
 @router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)

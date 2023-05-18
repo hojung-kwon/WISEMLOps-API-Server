@@ -1,7 +1,6 @@
 import json
 
 from kubernetes import client
-
 from src.cluster.models import Metadata
 from src.models import APIResponseModel
 
@@ -70,6 +69,7 @@ def to_volume_claim_status(item):
         "create_date": metadata.create_date,
     }
 
+
 def success_with_config_map_status(model):
     return _success_with_status(model, to_config_map_status)
 
@@ -81,6 +81,25 @@ def to_config_map_status(item):
         "data": item.data,
         "create_date": metadata.create_date,
     }
+
+
+def success_with_secret_status(model):
+    return _success_with_status(model, to_secret_status)
+
+
+def to_secret_status(item):
+    metadata = metadata_of(item)
+    return {
+        "name": metadata.name,
+        "type": item.type,
+        "data": item.data,
+        "create_date": metadata.create_date,
+    }
+
+
+def encode_to_base64(dict_data: dict):
+    import base64
+    return {key: base64.b64encode(value.encode('utf-8')).decode('utf-8') for key, value in dict_data.items()}
 
 
 def metadata_of(item):

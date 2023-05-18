@@ -2,11 +2,11 @@ import ssl
 
 from kubernetes import client
 from src.cluster.client import create_client, create_custom_api, template_pv, template_namespace, template_pvc, \
-    template_configmap
-from src.cluster.models import Volume, VolumeClaim, ConfigMap
+    template_configmap, template_secret
+from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret
 from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list, \
     success_with_node_status, success_with_volume_status, success_with_volume_claim_status, \
-    success_with_config_map_status
+    success_with_config_map_status, success_with_secret_status, encode_to_base64
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -123,16 +123,32 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def get_services(self, namespace: str = 'default'):
-        try:
-            result = self.cluster_client.list_namespaced_service(namespace=namespace)
-            return response(result)
-        except client.ApiException as e:
-            return error_with_message(e)
-
     def get_secrets(self, namespace: str = 'default'):
         try:
             result = self.cluster_client.list_namespaced_secret(namespace=namespace)
+            return response(result, success_with_secret_status)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def create_secret(self, namespace: str, secret: Secret):
+        try:
+            secret.data = encode_to_base64(secret.data)
+            body = template_secret(secret)
+            result = self.cluster_client.create_namespaced_secret(namespace=namespace, body=body)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def delete_secret(self, namespace: str, name: str):
+        try:
+            result = self.cluster_client.delete_namespaced_secret(name=name, namespace=namespace)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def get_services(self, namespace: str = 'default'):
+        try:
+            result = self.cluster_client.list_namespaced_service(namespace=namespace)
             return response(result)
         except client.ApiException as e:
             return error_with_message(e)

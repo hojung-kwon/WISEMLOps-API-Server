@@ -1,6 +1,6 @@
 from kubernetes import client
 from src.cluster.config import load_config, create_config
-from src.cluster.models import Volume, VolumeClaim, ConfigMap
+from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret
 from src.config import app_config
 
 
@@ -66,6 +66,7 @@ def template_pvc(pvc: VolumeClaim):
     )
     return _claim
 
+
 def template_configmap(config_map: ConfigMap):
     return client.V1ConfigMap(
         metadata=client.V1ObjectMeta(
@@ -73,4 +74,15 @@ def template_configmap(config_map: ConfigMap):
             labels=config_map.labels
         ),
         data=config_map.data
+    )
+
+
+def template_secret(secret: Secret):
+    return client.V1Secret(
+        metadata=client.V1ObjectMeta(
+            name=secret.name,
+            labels=secret.labels
+        ),
+        data=secret.data,
+        type=secret.type
     )
