@@ -8,7 +8,7 @@ local:
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
   MINIO:
-    ENDPOINT: '211.39.140.30:8082'
+    ENDPOINT: 'http://211.39.140.30:8082'
     ACCESS_KEY: 'HoItKC9L7DkLjenn'
     SECRET_KEY: 'hVQN7JZWrtSvdpfST5Jxv9uXPVmHtGjK'
 
@@ -22,6 +22,6 @@ container:
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
   MINIO:
-    ENDPOINT: '211.39.140.30:8082'
+    ENDPOINT: 'http://211.39.140.30:8082'
     ACCESS_KEY: 'HoItKC9L7DkLjenn'
     SECRET_KEY: 'hVQN7JZWrtSvdpfST5Jxv9uXPVmHtGjK'
