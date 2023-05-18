@@ -102,6 +102,23 @@ def encode_to_base64(dict_data: dict):
     return {key: base64.b64encode(value.encode('utf-8')).decode('utf-8') for key, value in dict_data.items()}
 
 
+def success_with_pod_status(model):
+    return _success_with_status(model, to_pod_status)
+
+
+def to_pod_status(item):
+    metadata = metadata_of(item)
+    ready = f"{sum(1 for status in item.status.container_statuses if status.ready)}/{len(item.status.container_statuses)}"
+    return {
+        "name": metadata.name,
+        # ready인 pod 수/total
+        "ready": ready,
+        "status": item.status.phase,
+        "restarts": item.status.container_statuses[0].restart_count,
+        "create_date": metadata.create_date,
+    }
+
+
 def metadata_of(item):
     # key-value 형태로 반환
     return Metadata(
