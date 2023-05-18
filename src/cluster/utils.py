@@ -70,6 +70,18 @@ def to_volume_claim_status(item):
         "create_date": metadata.create_date,
     }
 
+def success_with_config_map_status(model):
+    return _success_with_status(model, to_config_map_status)
+
+
+def to_config_map_status(item):
+    metadata = metadata_of(item)
+    return {
+        "name": metadata.name,
+        "data": item.data,
+        "create_date": metadata.create_date,
+    }
+
 
 def metadata_of(item):
     # key-value 형태로 반환

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from src.models import APIResponseModel
 from src.cluster.service import cluster_service
-from src.cluster.models import Volume, VolumeClaim
+from src.cluster.models import Volume, VolumeClaim, ConfigMap
 
 router = APIRouter(
     prefix="/cluster",
@@ -66,9 +66,19 @@ async def delete_volume_claim(namespace: str, name: str):
     return cluster_service.delete_volume_claim(namespace, name)
 
 
-@router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)
-async def get_services(namespace: str = 'default'):
-    return cluster_service.get_services(namespace)
+@router.get("/namespaces/{namespace}/configmaps", tags=["configmap"], response_model=APIResponseModel)
+async def get_config_maps(namespace: str = 'default'):
+    return cluster_service.get_config_maps(namespace)
+
+
+@router.post("/namespaces/{namespace}/configmaps", tags=["configmap"], response_model=APIResponseModel)
+async def create_config_map(namespace: str, config_map: ConfigMap):
+    return cluster_service.create_config_map(namespace, config_map)
+
+
+@router.delete("/namespaces/{namespace}/configmaps/{name}", tags=["configmap"], response_model=APIResponseModel)
+async def delete_config_map(namespace: str, name: str):
+    return cluster_service.delete_config_map(namespace, name)
 
 
 @router.get("/namespaces/{namespace}/secrets", tags=["secret"], response_model=APIResponseModel)
@@ -76,13 +86,13 @@ async def get_secrets(namespace: str = 'default'):
     return cluster_service.get_secrets(namespace)
 
 
+@router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)
+async def get_services(namespace: str = 'default'):
+    return cluster_service.get_services(namespace)
+
+
 @router.get("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)
 async def get_list_namespaced_pod(namespace: str = 'default'):
     return cluster_service.get_pods(namespace)
-
-
-@router.get("/namespaces/{namespace}/configmaps", tags=["configmap"], response_model=APIResponseModel)
-async def get_config_maps(namespace: str = 'default'):
-    return cluster_service.get_config_maps(namespace)
 
 
