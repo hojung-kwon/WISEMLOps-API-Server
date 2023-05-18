@@ -24,7 +24,7 @@ def success_with_node_status(model):
 
 
 def to_node_status(item):
-    name, create_date, _ = metadata_of(item)
+    name, create_date, *_ = metadata_of(item)
     return {
         "name": name,
         "version": item.status.node_info.kubelet_version,
@@ -38,7 +38,7 @@ def success_with_volume_status(model):
 
 
 def to_volume_status(item):
-    name, create_date, _ = metadata_of(item)
+    name, create_date, *_ = metadata_of(item)
     return {
         "name": name,
         "capacity": item.spec.capacity['storage'],
@@ -57,7 +57,7 @@ def success_with_volume_claim_status(model):
 
 
 def to_volume_claim_status(item):
-    name, create_date, _ = metadata_of(item)
+    name, create_date, *_ = metadata_of(item)
     return {
         "name": name,
         "status": item.status.phase,
