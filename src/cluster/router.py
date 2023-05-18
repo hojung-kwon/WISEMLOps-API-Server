@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from src.models import APIResponseModel
 from src.cluster.service import cluster_service
-from src.cluster.models import PersistentVolume
+from src.cluster.models import Volume, VolumeClaim
 
 router = APIRouter(
     prefix="/cluster",
@@ -42,7 +42,7 @@ async def get_volumes():
 
 
 @router.post("/volumes", tags=["volume"], response_model=APIResponseModel)
-async def create_volume(pv: PersistentVolume):
+async def create_volume(pv: Volume):
     return cluster_service.create_volume(pv)
 
 
@@ -57,15 +57,13 @@ async def get_volume_claims(namespace: str = 'default'):
 
 
 @router.post("/namespaces/{namespace}/volumeclaims", tags=["volumeclaim"], response_model=APIResponseModel)
-async def create_volume_claim(
-        namespace: str,
-        name: str,
-        size: str = '3Gi',
-        volume_mode: str = 'Filesystem',
-        access_mode: str = 'ReadWriteOnce',
-        storage_class: str = 'default-storage-class',
-        volume_name: str = None):
-    return cluster_service.create_volume_claim(namespace, name, size, volume_mode, access_mode, storage_class, volume_name)
+async def create_volume_claim(namespace: str, pvc: VolumeClaim):
+    return cluster_service.create_volume_claim(namespace, pvc)
+
+
+@router.delete("/namespaces/{namespace}/volumeclaims/{name}", tags=["volumeclaim"], response_model=APIResponseModel)
+async def delete_volume_claim(namespace: str, name: str):
+    return cluster_service.delete_volume_claim(namespace, name)
 
 
 @router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)

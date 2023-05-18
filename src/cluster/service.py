@@ -1,10 +1,10 @@
 import ssl
 
 from kubernetes import client
-from src.cluster.client import create_client, create_custom_api, template_pv, template_namespace
-from src.cluster.models import PersistentVolume
+from src.cluster.client import create_client, create_custom_api, template_pv, template_namespace, template_pvc
+from src.cluster.models import Volume, VolumeClaim
 from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list, \
-    success_with_node_status
+    success_with_node_status, success_with_volume_status
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -58,11 +58,11 @@ class ClusterService:
     def get_volumes(self):
         try:
             result = self.cluster_client.list_persistent_volume()
-            return response(result)
+            return response(result, success_with_volume_status)
         except client.ApiException as e:
             return error_with_message(e)
 
-    def create_volume(self, pv: PersistentVolume):
+    def create_volume(self, pv: Volume):
         try:
             body = template_pv(pv)
             result = self.cluster_client.create_persistent_volume(body=body)
@@ -77,6 +77,28 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
+    def get_volume_claims(self, namespace: str = 'default'):
+        try:
+            result = self.cluster_client.list_namespaced_persistent_volume_claim(namespace=namespace)
+            return response(result)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def create_volume_claim(self, namespace: str, pvc: VolumeClaim):
+        try:
+            body = template_pvc(pvc)
+            result = self.cluster_client.create_namespaced_persistent_volume_claim(namespace=namespace, body=body)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def delete_volume_claim(self, namespace: str, name: str):
+        try:
+            result = self.cluster_client.delete_namespaced_persistent_volume_claim(name=name, namespace=namespace)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
     def get_services(self, namespace: str = 'default'):
         try:
             result = self.cluster_client.list_namespaced_service(namespace=namespace)
@@ -87,13 +109,6 @@ class ClusterService:
     def get_secrets(self, namespace: str = 'default'):
         try:
             result = self.cluster_client.list_namespaced_secret(namespace=namespace)
-            return response(result)
-        except client.ApiException as e:
-            return error_with_message(e)
-
-    def get_volume_claims(self, namespace: str = 'default'):
-        try:
-            result = self.cluster_client.list_namespaced_persistent_volume_claim(namespace=namespace)
             return response(result)
         except client.ApiException as e:
             return error_with_message(e)
