@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
@@ -34,9 +36,9 @@ async def remove_bucket(bucket_name: str):
 
 @router.get("/object/{bucket_name}", tags=["object"], response_model=APIResponseModel)
 async def list_objects(bucket_name: str,
-                       prefix: str = None,
+                       prefix: Optional[str] = None,
                        recursive: bool = False,
-                       start_after: bool = None):
+                       start_after: Optional[str] = None):
     return service.list_objects(bucket_name, prefix=prefix, recursive=recursive, start_after=start_after)
 
 
