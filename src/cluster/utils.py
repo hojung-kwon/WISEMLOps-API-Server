@@ -1,6 +1,8 @@
 import json
 
 from kubernetes import client
+
+from src.cluster.models import Metadata
 from src.models import APIResponseModel
 
 
@@ -24,12 +26,12 @@ def success_with_node_status(model):
 
 
 def to_node_status(item):
-    name, create_date, *_ = metadata_of(item)
+    metadata = metadata_of(item)
     return {
-        "name": name,
+        "name": metadata.name,
         "version": item.status.node_info.kubelet_version,
         "status": item.status.conditions[-1].type,
-        "create_date": create_date,
+        "create_date": metadata.create_date,
     }
 
 
@@ -38,9 +40,9 @@ def success_with_volume_status(model):
 
 
 def to_volume_status(item):
-    name, create_date, *_ = metadata_of(item)
+    metadata = metadata_of(item)
     return {
-        "name": name,
+        "name": metadata.name,
         "capacity": item.spec.capacity['storage'],
         "access_mode": item.spec.access_modes[0],
         "reclaim_policy": item.spec.persistent_volume_reclaim_policy,
@@ -48,7 +50,7 @@ def to_volume_status(item):
         "claim": item.spec.claim_ref.name if item.spec.claim_ref else 'none',
         "storage_class": item.spec.storage_class_name,
         "reason": item.status.reason,
-        "create_date": create_date,
+        "create_date": metadata.create_date,
     }
 
 
@@ -57,27 +59,27 @@ def success_with_volume_claim_status(model):
 
 
 def to_volume_claim_status(item):
-    name, create_date, *_ = metadata_of(item)
+    metadata = metadata_of(item)
     return {
-        "name": name,
+        "name": metadata.name,
         "status": item.status.phase,
         "volume": item.spec.volume_name,
         "capacity": item.status.capacity['storage'],
         "access_mode": item.spec.access_modes[0],
         "storage_class": item.spec.storage_class_name,
-        "create_date": create_date,
+        "create_date": metadata.create_date,
     }
 
 
 def metadata_of(item):
     # key-value 형태로 반환
-    return {
-        "name": item.metadata.name,
-        "create_date": item.metadata.creation_timestamp,
-        "namespace": item.metadata.namespace,
-        "api_version": item.api_version,
-        "labels": item.metadata.labels
-    }
+    return Metadata(
+        name=item.metadata.name,
+        create_date=item.metadata.creation_timestamp,
+        annotations=item.metadata.annotations,
+        labels=item.metadata.labels,
+        api_version=item.api_version,
+    )
 
 
 def error_with_message(e: client.ApiException):
