@@ -34,3 +34,11 @@ class ConfigMap(BaseModel):
     data: dict = {}
     labels: dict = {}
     namespace: str = 'default'
+
+
+class Secret(BaseModel):
+    name: str
+    data: dict = {}
+    labels: dict = {}
+    namespace: str = 'default'
+    type: str = 'Opaque'

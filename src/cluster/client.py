@@ -1,6 +1,6 @@
 from kubernetes import client
 from src.cluster.config import load_config, create_config
-from src.cluster.models import Volume, VolumeClaim
+from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret
 from src.config import app_config
 
 
@@ -20,17 +20,12 @@ def create_custom_api(with_token: bool = False):
         return client.CustomObjectsApi()
 
 
-def template_metadata(name: str, namespace: str = 'default', labels=None):
-    return client.V1ObjectMeta(
-        name=name,
-        namespace=namespace,
-        labels=labels
-    )
-
-
 def template_namespace(namespace: str, labels=None):
     return client.V1Namespace(
-        metadata=template_metadata(name=namespace, labels=labels)
+        metadata=client.V1ObjectMeta(
+            name=namespace,
+            labels=labels
+        )
     )
 
 
@@ -70,3 +65,24 @@ def template_pvc(pvc: VolumeClaim):
         )
     )
     return _claim
+
+
+def template_configmap(config_map: ConfigMap):
+    return client.V1ConfigMap(
+        metadata=client.V1ObjectMeta(
+            name=config_map.name,
+            labels=config_map.labels
+        ),
+        data=config_map.data
+    )
+
+
+def template_secret(secret: Secret):
+    return client.V1Secret(
+        metadata=client.V1ObjectMeta(
+            name=secret.name,
+            labels=secret.labels
+        ),
+        data=secret.data,
+        type=secret.type
+    )
