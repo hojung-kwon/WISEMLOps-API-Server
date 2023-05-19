@@ -5,7 +5,7 @@ from src.cluster import cluster_service
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Pod, Deployment, Service
+    Pod, Deployment, Service, Ingress
 
 router = APIRouter(
     prefix="/cluster",
@@ -142,3 +142,18 @@ async def create_service(namespace: str, service: Service):
 @router.delete("/namespaces/{namespace}/services/{name}", tags=["service"], response_model=APIResponseModel)
 async def delete_service(namespace: str, name: str):
     return cluster_service.delete_service(namespace, name)
+
+
+@router.get("/namespaces/{namespace}/ingresses", tags=["ingress"], response_model=APIResponseModel)
+async def get_ingresses(namespace: str = 'default'):
+    return cluster_service.get_ingresses(namespace)
+
+
+@router.post("/namespaces/{namespace}/ingresses", tags=["ingress"], response_model=APIResponseModel)
+async def create_ingress(namespace: str, ingress: Ingress):
+    return cluster_service.create_ingress(namespace, ingress)
+
+
+@router.delete("/namespaces/{namespace}/ingresses/{name}", tags=["ingress"], response_model=APIResponseModel)
+async def delete_ingress(namespace: str, name: str):
+    return cluster_service.delete_ingress(namespace, name)

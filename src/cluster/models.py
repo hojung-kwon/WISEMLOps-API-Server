@@ -105,3 +105,22 @@ class Service(BaseModel):
     type: ServiceType = ServiceType.ClusterIP
     ports: List[ServicePort]
 
+
+class IngressPath(BaseModel):
+    path: str
+    path_type: str = 'Prefix'
+    service_name: str | None = None
+    service_port: int
+
+
+class IngressRule(BaseModel):
+    host: str
+    paths: List[IngressPath]
+
+
+class Ingress(BaseModel):
+    name: str
+    labels: dict = {}
+    annotations: dict = {'nginx.ingress.kubernetes.io/rewrite-target': '/'}
+    ingress_class_name: str = 'nginx'
+    rules: List[IngressRule]

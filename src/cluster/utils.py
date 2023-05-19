@@ -159,6 +159,20 @@ class Render:
             "create_date": metadata.create_date,
         }
 
+    @staticmethod
+    def to_ingress_status_list(model):
+        return Render._to_status_list(model, Render.to_ingress_status)
+
+    @staticmethod
+    def to_ingress_status(item):
+        metadata = Render.metadata_of(item)
+        return {
+            "name": metadata.name,
+            "class": item.spec.ingress_class_name,
+            "hosts": [rule.host for rule in item.spec.rules],
+            "create_date": metadata.create_date,
+        }
+
 
 def encode_to_base64(dict_data: dict):
     import base64
