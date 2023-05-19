@@ -83,3 +83,25 @@ class Deployment(BaseModel):
     replicas: int = 1
     labels: dict = {}
     template_pod: Pod
+
+
+class ServiceType(Enum):
+    ClusterIP = 'ClusterIP'
+    NodePort = 'NodePort'
+    LoadBalancer = 'LoadBalancer'
+
+
+class ServicePort(BaseModel):
+    name: str
+    port: int
+    target_port: int
+    node_port: int | None = None
+    protocol: str = 'TCP'
+
+
+class Service(BaseModel):
+    name: str
+    labels: dict = {}
+    type: ServiceType = ServiceType.ClusterIP
+    ports: List[ServicePort]
+

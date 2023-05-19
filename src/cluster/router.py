@@ -5,7 +5,7 @@ from src.cluster import cluster_service
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Pod, Deployment
+    Pod, Deployment, Service
 
 router = APIRouter(
     prefix="/cluster",
@@ -134,3 +134,11 @@ async def get_services(namespace: str = 'default'):
     return cluster_service.get_services(namespace)
 
 
+@router.post("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)
+async def create_service(namespace: str, service: Service):
+    return cluster_service.create_service(namespace, service)
+
+
+@router.delete("/namespaces/{namespace}/services/{name}", tags=["service"], response_model=APIResponseModel)
+async def delete_service(namespace: str, name: str):
+    return cluster_service.delete_service(namespace, name)

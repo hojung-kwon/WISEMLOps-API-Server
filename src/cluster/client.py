@@ -3,7 +3,7 @@ from src.cluster.config import get_nfs_config
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment
+    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment, Service
 
 
 class ClusterTemplateFactory:
@@ -149,5 +149,25 @@ class ClusterTemplateFactory:
                     match_labels=deployment.labels
                 ),
                 template=ClusterTemplateFactory.build_pod(deployment.template_pod)
+            )
+        )
+
+    @staticmethod
+    def build_service(service: Service):
+        return client.V1Service(
+            metadata=client.V1ObjectMeta(
+                name=service.name,
+                labels=service.labels
+            ),
+            spec=client.V1ServiceSpec(
+                type=service.type.value,
+                selector=service.labels,
+                ports=[client.V1ServicePort(
+                    name=port.name,
+                    port=port.port,
+                    target_port=port.target_port,
+                    node_port=port.node_port,
+                    protocol=port.protocol
+                ) for port in service.ports]
             )
         )

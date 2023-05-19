@@ -23,6 +23,17 @@ class Render:
         return {"result": ['no content']}
 
     @staticmethod
+    def metadata_of(item):
+        # key-value 형태로 반환
+        return Metadata(
+            name=item.metadata.name,
+            create_date=item.metadata.creation_timestamp,
+            annotations=item.metadata.annotations,
+            labels=item.metadata.labels,
+            api_version=item.api_version,
+        )
+
+    @staticmethod
     def to_node_status_list(model):
         return Render._to_status_list(model, Render.to_node_status)
 
@@ -133,15 +144,20 @@ class Render:
         }
 
     @staticmethod
-    def metadata_of(item):
-        # key-value 형태로 반환
-        return Metadata(
-            name=item.metadata.name,
-            create_date=item.metadata.creation_timestamp,
-            annotations=item.metadata.annotations,
-            labels=item.metadata.labels,
-            api_version=item.api_version,
-        )
+    def to_service_status_list(model):
+        return Render._to_status_list(model, Render.to_service_status)
+
+    @staticmethod
+    def to_service_status(item):
+        metadata = Render.metadata_of(item)
+        return {
+            "name": metadata.name,
+            "type": item.spec.type,
+            "cluster_ip": item.spec.cluster_ip,
+            "external_ip": item.spec.external_i_ps,
+            "ports": [f"{port.port}:{port.node_port}/{port.protocol}" for port in item.spec.ports],
+            "create_date": metadata.create_date,
+        }
 
 
 def encode_to_base64(dict_data: dict):
