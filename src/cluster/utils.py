@@ -5,23 +5,23 @@ from src.cluster.models import Metadata
 from src.models import APIResponseModel
 
 
-def success_with_name_list(model):
+def to_name_list(model):
     return {"result": [item.metadata.name for item in model.items]}
 
 
-def success_with_no_content(model):
+def to_no_content(model):
     return {"result": ['no content']}
 
 
-def _success_with_status(model, to_shape: callable):
+def _to_status_list(model, to_each_shape: callable):
     result = []
     for item in model.items:
-        result.append(to_shape(item))
+        result.append(to_each_shape(item))
     return {"result": result}
 
 
-def success_with_node_status(model):
-    return _success_with_status(model, to_node_status)
+def to_node_status_list(model):
+    return _to_status_list(model, to_node_status)
 
 
 def to_node_status(item):
@@ -34,8 +34,8 @@ def to_node_status(item):
     }
 
 
-def success_with_volume_status(model):
-    return _success_with_status(model, to_volume_status)
+def to_volume_status_list(model):
+    return _to_status_list(model, to_volume_status)
 
 
 def to_volume_status(item):
@@ -53,8 +53,8 @@ def to_volume_status(item):
     }
 
 
-def success_with_volume_claim_status(model):
-    return _success_with_status(model, to_volume_claim_status)
+def to_volume_claim_status_list(model):
+    return _to_status_list(model, to_volume_claim_status)
 
 
 def to_volume_claim_status(item):
@@ -70,11 +70,11 @@ def to_volume_claim_status(item):
     }
 
 
-def success_with_config_map_status(model):
-    return _success_with_status(model, to_config_map_status)
+def to_configmap_status_list(model):
+    return _to_status_list(model, to_configmap_status)
 
 
-def to_config_map_status(item):
+def to_configmap_status(item):
     metadata = metadata_of(item)
     return {
         "name": metadata.name,
@@ -83,8 +83,8 @@ def to_config_map_status(item):
     }
 
 
-def success_with_secret_status(model):
-    return _success_with_status(model, to_secret_status)
+def to_secret_status_list(model):
+    return _to_status_list(model, to_secret_status)
 
 
 def to_secret_status(item):
@@ -102,8 +102,8 @@ def encode_to_base64(dict_data: dict):
     return {key: base64.b64encode(value.encode('utf-8')).decode('utf-8') for key, value in dict_data.items()}
 
 
-def success_with_pod_status(model):
-    return _success_with_status(model, to_pod_status)
+def to_pod_status_list(model):
+    return _to_status_list(model, to_pod_status)
 
 
 def to_pod_status(item):
@@ -119,8 +119,8 @@ def to_pod_status(item):
     }
 
 
-def success_with_deployment_status(model):
-    return _success_with_status(model, to_deployment_status)
+def to_deployment_status_list(model):
+    return _to_status_list(model, to_deployment_status)
 
 
 def to_deployment_status(item):
@@ -150,5 +150,5 @@ def error_with_message(e: client.ApiException):
     return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
 
 
-def response(model, shape_callable: callable = success_with_name_list):
+def response(model, shape_callable: callable = to_name_list):
     return shape_callable(model)
