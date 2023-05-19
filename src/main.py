@@ -12,6 +12,7 @@ from fastapi import FastAPI, Request
 from src.version import get_version_info, write_version_py
 from src.exceptions import CustomHTTPError
 from src.cluster import router as cluster_router
+from src.crds import router as crd_router
 from src.minio_client import router as minio_router
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
@@ -85,6 +86,7 @@ app = FastAPI(
 )
 
 app.include_router(cluster_router.router)
+app.include_router(crd_router.router)
 app.include_router(minio_router.router)
 
 origins = [
