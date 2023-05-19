@@ -3,7 +3,7 @@ from src.cluster.utils import Render, response, error_with_message, encode_to_ba
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Pod, Deployment
+    Pod, Deployment, Service, Ingress
 
 
 class ClusterService:
@@ -11,6 +11,7 @@ class ClusterService:
         # Kubernetes API 클라이언트 생성
         self.cluster_client = Factory.create_client()
         self.deployment_client = Factory.create_deployment_client()
+        self.network_client = Factory.create_networking_api()
         pass
 
     def get_nodes(self):
@@ -188,6 +189,43 @@ class ClusterService:
     def get_services(self, namespace: str = 'default'):
         try:
             result = self.cluster_client.list_namespaced_service(namespace=namespace)
-            return response(result)
+            return response(result, Render.to_service_status_list)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def create_service(self, namespace: str, service: Service):
+        try:
+            body = Factory.build_service(service)
+            result = self.cluster_client.create_namespaced_service(namespace=namespace, body=body)
+            return response(result, Render.to_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def delete_service(self, namespace: str, name: str):
+        try:
+            result = self.cluster_client.delete_namespaced_service(name=name, namespace=namespace)
+            return response(result, Render.to_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def get_ingresses(self, namespace: str = 'default'):
+        try:
+            result = self.network_client.list_namespaced_ingress(namespace=namespace)
+            return response(result, Render.to_ingress_status_list)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def create_ingress(self, namespace: str, ingress: Ingress):
+        try:
+            body = Factory.build_ingress(ingress)
+            result = self.network_client.create_namespaced_ingress(namespace=namespace, body=body)
+            return response(result, Render.to_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def delete_ingress(self, namespace: str, name: str):
+        try:
+            result = self.network_client.delete_namespaced_ingress(name=name, namespace=namespace)
+            return response(result, Render.to_no_content)
         except client.ApiException as e:
             return error_with_message(e)

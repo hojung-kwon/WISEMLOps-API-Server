@@ -3,7 +3,7 @@ from src.cluster.config import get_nfs_config
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment
+    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment, Service, Ingress
 
 
 class ClusterTemplateFactory:
@@ -14,6 +14,10 @@ class ClusterTemplateFactory:
     @staticmethod
     def create_deployment_client():
         return client.AppsV1Api()
+
+    @staticmethod
+    def create_networking_api():
+        return client.NetworkingV1Api()
 
     @staticmethod
     def create_custom_api():
@@ -151,3 +155,55 @@ class ClusterTemplateFactory:
                 template=ClusterTemplateFactory.build_pod(deployment.template_pod)
             )
         )
+
+    @staticmethod
+    def build_service(service: Service):
+        return client.V1Service(
+            metadata=client.V1ObjectMeta(
+                name=service.name,
+                labels=service.labels
+            ),
+            spec=client.V1ServiceSpec(
+                type=service.type.value,
+                selector=service.labels,
+                ports=[client.V1ServicePort(
+                    name=port.name,
+                    port=port.port,
+                    target_port=port.target_port,
+                    node_port=port.node_port,
+                    protocol=port.protocol
+                ) for port in service.ports]
+            )
+        )
+
+    @staticmethod
+    def build_ingress(ingress: Ingress):
+        return client.V1Ingress(
+            metadata=client.V1ObjectMeta(
+                name=ingress.name,
+                labels=ingress.labels,
+                annotations=ingress.annotations
+            ),
+            spec=client.V1IngressSpec(
+                ingress_class_name=ingress.ingress_class_name,
+                rules=[client.V1IngressRule(
+                    host=rule.host,
+                    http=client.V1HTTPIngressRuleValue(
+                        paths=[client.V1HTTPIngressPath(
+                            path=path_item.path,
+                            path_type=path_item.path_type,
+                            backend=client.V1IngressBackend(
+                                service=client.V1IngressServiceBackend(
+                                    name=path_item.service_name,
+                                    port=client.V1ServiceBackendPort(
+                                        number=path_item.service_port
+                                    )
+                                )
+                            )
+                        ) for path_item in rule.paths]
+                    )
+                ) for rule in ingress.rules]
+            )
+        )
+
+
