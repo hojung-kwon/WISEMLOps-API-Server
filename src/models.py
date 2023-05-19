@@ -1,7 +1,8 @@
 from typing import Any
 
 from pydantic import BaseModel
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from pydantic.schema import datetime
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -19,16 +20,12 @@ class User(Base):
     items = relationship("Item", back_populates="owner")
 
 
-class Item(Base):
-    __tablename__ = "items"
-    __table_args__ = {'extend_existing': True}
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    description = Column(String, index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-
-    owner = relationship("User", back_populates="items")
+class Metadata(BaseModel):
+    name: str
+    create_date: datetime
+    annotations: dict | None
+    labels: dict | None
+    api_version: str | None
 
 
 class APIResponseModel(BaseModel):

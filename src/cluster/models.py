@@ -2,15 +2,6 @@ from enum import Enum
 from typing import List
 
 from pydantic import BaseModel
-from pydantic.schema import datetime
-
-
-class Metadata(BaseModel):
-    name: str
-    create_date: datetime
-    annotations: dict | None
-    labels: dict | None
-    api_version: str | None
 
 
 class Volume(BaseModel):

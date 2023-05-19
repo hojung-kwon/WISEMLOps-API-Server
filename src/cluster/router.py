@@ -12,7 +12,7 @@ router = APIRouter(
     prefix="/cluster",
     responses={404: {"description": "Not found"}},
     default_response_class=JSONResponse,
-)  # APIRouter 변수명은 원하는대로 설정 가능
+)
 
 
 @router.get("/nodes", tags=["node"], response_model=APIResponseModel)
