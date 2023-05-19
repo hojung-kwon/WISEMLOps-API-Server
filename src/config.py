@@ -1,5 +1,6 @@
 import os
 import yaml
+from kubernetes import config
 
 
 class Config:
@@ -19,3 +20,11 @@ class Config:
         self.MINIO_ACCESS_KEY = self._config['MINIO']['ACCESS_KEY']
         self.MINIO_SECRET_KEY = self._config['MINIO']['SECRET_KEY']
         pass
+
+    def load_cluster_config(self):
+        config.load_kube_config(config_file=self.CLUSTER_KUBE_CONFIG_PATH)
+
+    def get_nfs_config(self):
+        nfs_server = self.CLUSTER_VOLUME_NFS_SERVER
+        nfs_path = self.CLUSTER_VOLUME_NFS_PATH
+        return nfs_server, nfs_path

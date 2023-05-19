@@ -1,12 +1,14 @@
 from kubernetes import client
-from src.cluster.config import get_nfs_config
+from src import app_config
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment, Service, Ingress
+    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment, \
+    Service, Ingress
 
 
-class ClusterTemplateFactory:
+class ClientFactory:
+
     @staticmethod
     def create_client():
         return client.CoreV1Api()
@@ -19,9 +21,8 @@ class ClusterTemplateFactory:
     def create_networking_api():
         return client.NetworkingV1Api()
 
-    @staticmethod
-    def create_custom_api():
-        return client.CustomObjectsApi()
+
+class ClientTemplateFactory:
 
     @staticmethod
     def build_namespace(namespace: str, labels=None):
@@ -34,7 +35,7 @@ class ClusterTemplateFactory:
 
     @staticmethod
     def build_nfs_volume():
-        nfs_server, nfs_path = get_nfs_config()
+        nfs_server, nfs_path = app_config.get_nfs_config()
         return client.V1NFSVolumeSource(
             server=nfs_server,
             path=nfs_path,
@@ -54,7 +55,7 @@ class ClusterTemplateFactory:
             )
         )
         if pv.volume_type == 'nfs':
-            _volume.spec.nfs = ClusterTemplateFactory.build_nfs_volume()
+            _volume.spec.nfs = ClientTemplateFactory.build_nfs_volume()
         return _volume
 
     @staticmethod
@@ -134,9 +135,9 @@ class ClusterTemplateFactory:
                 labels=pod.labels
             ),
             spec=client.V1PodSpec(
-                containers=[ClusterTemplateFactory.build_container(container) for container in pod.containers],
-                image_pull_secrets=ClusterTemplateFactory.build_image_pull_secrets(pod.image_pull_secrets),
-                volumes=[ClusterTemplateFactory.build_container_volume(volume) for volume in pod.volumes],
+                containers=[ClientTemplateFactory.build_container(container) for container in pod.containers],
+                image_pull_secrets=ClientTemplateFactory.build_image_pull_secrets(pod.image_pull_secrets),
+                volumes=[ClientTemplateFactory.build_container_volume(volume) for volume in pod.volumes],
             )
         )
 
@@ -152,7 +153,7 @@ class ClusterTemplateFactory:
                 selector=client.V1LabelSelector(
                     match_labels=deployment.labels
                 ),
-                template=ClusterTemplateFactory.build_pod(deployment.template_pod)
+                template=ClientTemplateFactory.build_pod(deployment.template_pod)
             )
         )
 
