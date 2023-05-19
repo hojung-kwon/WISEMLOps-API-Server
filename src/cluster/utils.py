@@ -119,6 +119,21 @@ def to_pod_status(item):
     }
 
 
+def success_with_deployment_status(model):
+    return _success_with_status(model, to_deployment_status)
+
+
+def to_deployment_status(item):
+    metadata = metadata_of(item)
+    return {
+        "name": metadata.name,
+        "ready": f"{item.status.ready_replicas}/{item.status.replicas}",
+        "up_to_date": item.status.updated_replicas,
+        "available": item.status.available_replicas,
+        "create_date": metadata.create_date,
+    }
+
+
 def metadata_of(item):
     # key-value 형태로 반환
     return Metadata(

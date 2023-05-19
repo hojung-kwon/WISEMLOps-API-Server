@@ -1,7 +1,7 @@
 from kubernetes import client
 from src.cluster.config import load_config, create_config
 from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret, Container, Pod, ContainerVolume, \
-    ContainerVolumeType
+    ContainerVolumeType, Deployment
 from src.config import app_config
 
 
@@ -11,6 +11,14 @@ def create_client(with_token: bool = False):
     else:
         load_config()
         return client.CoreV1Api()
+
+
+def create_app_client(with_token: bool = False):
+    if with_token:
+        return client.AppsV1Api(api_client=client.ApiClient(create_config()))
+    else:
+        load_config()
+        return client.AppsV1Api()
 
 
 def create_custom_api(with_token: bool = False):
@@ -132,5 +140,21 @@ def template_pod(pod: Pod):
             containers=[template_container(container) for container in pod.containers],
             image_pull_secrets=template_image_pull_secrets(pod.image_pull_secrets),
             volumes=[template_container_volume(volume) for volume in pod.volumes],
+        )
+    )
+
+
+def template_deployment(deployment: Deployment):
+    return client.V1Deployment(
+        metadata=client.V1ObjectMeta(
+            name=deployment.name,
+            labels=deployment.labels
+        ),
+        spec=client.V1DeploymentSpec(
+            replicas=deployment.replicas,
+            selector=client.V1LabelSelector(
+                match_labels=deployment.labels
+            ),
+            template=template_pod(deployment.template_pod)
         )
     )

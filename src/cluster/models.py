@@ -76,3 +76,10 @@ class Pod(BaseModel):
     containers: List[Container]
     image_pull_secrets: List[str] | None
     volumes: List[ContainerVolume] | None
+
+
+class Deployment(BaseModel):
+    name: str
+    replicas: int = 1
+    labels: dict = {}
+    template_pod: Pod
