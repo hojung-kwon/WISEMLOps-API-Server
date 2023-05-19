@@ -18,4 +18,5 @@ class Config:
         self.MINIO_ENDPOINT = self._config['MINIO']['ENDPOINT']
         self.MINIO_ACCESS_KEY = self._config['MINIO']['ACCESS_KEY']
         self.MINIO_SECRET_KEY = self._config['MINIO']['SECRET_KEY']
+        self.MLFLOW_TRACKING_URI = self._config['MLFLOW']['TRACKING_URI']
         pass
