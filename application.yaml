@@ -1,10 +1,7 @@
 local:
   CLUSTER:
     HOST: 'https://211.39.140.43:6443'
-    CERTS_PATH: 'D:\repoPy\MLOps-API\certs'
     KUBE_CONFIG_PATH: 'D:\repoPy\MLOps-API\certs\kubeconfig'
-    BEARER_TOKEN_PATH: 'D:\repoPy\MLOps-API\certs\bearer_token'
-    CA_CERT_PATH: 'D:\repoPy\MLOps-API\certs\k8s-ca.cert'
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
   MINIO:
@@ -15,10 +12,7 @@ local:
 container:
   CLUSTER:
     HOST: 'https://211.39.140.43:6443'
-    CERTS_PATH: '/home/wisenut/app/certs'
     KUBE_CONFIG_PATH: '/home/wisenut/app/certs/kubeconfig'
-    BEARER_TOKEN_PATH: '/home/wisenut/app/certs/bearer_token'
-    CA_CERT_PATH: '/home/wisenut/app/certs/k8s-ca.cert'
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
   MINIO:

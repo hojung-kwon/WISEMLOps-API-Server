@@ -12,16 +12,10 @@ class Config:
         self._config = conf
 
         self.CLUSTER_HOST = self._config['CLUSTER']['HOST']
-        self.CLUSTER_CERTS_PATH = self._config['CLUSTER']['CERTS_PATH']
         self.CLUSTER_KUBE_CONFIG_PATH = self._config['CLUSTER']['KUBE_CONFIG_PATH']
-        self.CLUSTER_BEARER_TOKEN_PATH = self._config['CLUSTER']['BEARER_TOKEN_PATH']
-        self.CLUSTER_CA_CERT_PATH = self._config['CLUSTER']['CA_CERT_PATH']
         self.CLUSTER_VOLUME_NFS_SERVER = self._config['CLUSTER']['VOLUME_NFS_SERVER']
         self.CLUSTER_VOLUME_NFS_PATH = self._config['CLUSTER']['VOLUME_NFS_PATH']
         self.MINIO_ENDPOINT = self._config['MINIO']['ENDPOINT']
         self.MINIO_ACCESS_KEY = self._config['MINIO']['ACCESS_KEY']
         self.MINIO_SECRET_KEY = self._config['MINIO']['SECRET_KEY']
         pass
-
-
-app_config = Config()
