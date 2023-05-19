@@ -1,6 +1,7 @@
 from kubernetes import client
 from src.cluster.config import load_config, create_config
-from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret
+from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret, Container, Pod, ContainerVolume, \
+    ContainerVolumeType, Deployment
 from src.config import app_config
 
 
@@ -10,6 +11,14 @@ def create_client(with_token: bool = False):
     else:
         load_config()
         return client.CoreV1Api()
+
+
+def create_app_client(with_token: bool = False):
+    if with_token:
+        return client.AppsV1Api(api_client=client.ApiClient(create_config()))
+    else:
+        load_config()
+        return client.AppsV1Api()
 
 
 def create_custom_api(with_token: bool = False):
@@ -85,4 +94,67 @@ def template_secret(secret: Secret):
         ),
         data=secret.data,
         type=secret.type
+    )
+
+
+def template_container(container: Container):
+    return client.V1Container(
+        name=container.name,
+        image=container.image,
+        image_pull_policy=container.image_pull_policy,
+        args=container.args,
+        env=[client.V1EnvVar(name=key, value=value) for key, value in container.env.items()],
+        command=container.command,
+        volume_mounts=[client.V1VolumeMount(
+            name=container.volume_mounts.name,
+            mount_path=container.volume_mounts.mount_path)],
+    )
+
+
+def template_container_volume(container_volume: ContainerVolume):
+    volume = client.V1Volume(name=container_volume.name)
+
+    if container_volume.type == ContainerVolumeType.PersistentVolumeClaim:
+        volume.persistent_volume_claim = client.V1PersistentVolumeClaimVolumeSource(claim_name=container_volume.type_name)
+    if container_volume.type == ContainerVolumeType.Secret:
+        volume.secret = client.V1SecretVolumeSource(secret_name=container_volume.type_name)
+    if container_volume.type == ContainerVolumeType.ConfigMap:
+        volume.config_map = client.V1ConfigMapVolumeSource(name=container_volume.type_name)
+
+    return volume
+
+
+def template_image_pull_secrets(secrets: list):
+    if secrets is None:
+        return None
+    return [client.V1LocalObjectReference(name=item) for item in secrets]
+
+
+def template_pod(pod: Pod):
+    return client.V1Pod(
+        metadata=client.V1ObjectMeta(
+            name=pod.name,
+            labels=pod.labels
+        ),
+        spec=client.V1PodSpec(
+            containers=[template_container(container) for container in pod.containers],
+            image_pull_secrets=template_image_pull_secrets(pod.image_pull_secrets),
+            volumes=[template_container_volume(volume) for volume in pod.volumes],
+        )
+    )
+
+
+def template_deployment(deployment: Deployment):
+    return client.V1Deployment(
+        metadata=client.V1ObjectMeta(
+            name=deployment.name,
+            labels=deployment.labels
+        ),
+        spec=client.V1DeploymentSpec(
+            replicas=deployment.replicas,
+            selector=client.V1LabelSelector(
+                match_labels=deployment.labels
+            ),
+            template=template_pod(deployment.template_pod)
+        )
     )

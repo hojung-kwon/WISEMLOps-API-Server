@@ -2,11 +2,12 @@ import ssl
 
 from kubernetes import client
 from src.cluster.client import create_client, create_custom_api, template_pv, template_namespace, template_pvc, \
-    template_configmap, template_secret
-from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret
+    template_configmap, template_secret, template_pod, template_deployment, create_app_client
+from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret, Pod, Deployment
 from src.cluster.utils import response, error_with_message, success_with_no_content, success_with_name_list, \
     success_with_node_status, success_with_volume_status, success_with_volume_claim_status, \
-    success_with_config_map_status, success_with_secret_status, encode_to_base64
+    success_with_config_map_status, success_with_secret_status, encode_to_base64, success_with_pod_status, \
+    success_with_deployment_status
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -16,6 +17,7 @@ class ClusterService:
         # Kubernetes API 클라이언트 생성
         self.cluster_client = create_client()
         self.cluster_crd_client = create_custom_api()
+        self.app_client = create_app_client()
         pass
 
     def get_nodes(self):
@@ -146,16 +148,53 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def get_services(self, namespace: str = 'default'):
-        try:
-            result = self.cluster_client.list_namespaced_service(namespace=namespace)
-            return response(result)
-        except client.ApiException as e:
-            return error_with_message(e)
-
     def get_pods(self, namespace: str = 'default'):
         try:
             result = self.cluster_client.list_namespaced_pod(namespace=namespace)
+            return response(result, success_with_pod_status)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def create_pod(self, namespace: str, pod: Pod):
+        try:
+            body = template_pod(pod)
+            result = self.cluster_client.create_namespaced_pod(namespace=namespace, body=body)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def delete_pod(self, namespace: str, name: str):
+        try:
+            result = self.cluster_client.delete_namespaced_pod(name=name, namespace=namespace)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def get_deployments(self, namespace: str = 'default'):
+        try:
+            result = self.app_client.list_namespaced_deployment(namespace=namespace)
+            return response(result, success_with_deployment_status)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def create_deployment(self, namespace: str, deployment: Deployment):
+        try:
+            body = template_deployment(deployment)
+            result = self.app_client.create_namespaced_deployment(namespace=namespace, body=body)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def delete_deployment(self, namespace: str, name: str):
+        try:
+            result = self.app_client.delete_namespaced_deployment(name=name, namespace=namespace)
+            return response(result, success_with_no_content)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def get_services(self, namespace: str = 'default'):
+        try:
+            result = self.cluster_client.list_namespaced_service(namespace=namespace)
             return response(result)
         except client.ApiException as e:
             return error_with_message(e)

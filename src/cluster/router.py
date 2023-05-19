@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from src.models import APIResponseModel
 from src.cluster.service import cluster_service
-from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret
+from src.cluster.models import Volume, VolumeClaim, ConfigMap, Secret, Pod, Deployment
 
 router = APIRouter(
     prefix="/cluster",
@@ -96,13 +96,38 @@ async def delete_secret(namespace: str, name: str):
     return cluster_service.delete_secret(namespace, name)
 
 
-@router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)
-async def get_services(namespace: str = 'default'):
-    return cluster_service.get_services(namespace)
-
-
 @router.get("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)
 async def get_list_namespaced_pod(namespace: str = 'default'):
     return cluster_service.get_pods(namespace)
+
+
+@router.post("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)
+async def create_namespaced_pod(namespace: str, pod: Pod):
+    return cluster_service.create_pod(namespace, pod)
+
+
+@router.delete("/namespaces/{namespace}/pods/{name}", tags=["pod"], response_model=APIResponseModel)
+async def delete_namespaced_pod(namespace: str, name: str):
+    return cluster_service.delete_pod(namespace, name)
+
+
+@router.get("/namespaces/{namespace}/deployments", tags=["deployment"], response_model=APIResponseModel)
+async def get_deployments(namespace: str = 'default'):
+    return cluster_service.get_deployments(namespace)
+
+
+@router.post("/namespaces/{namespace}/deployments", tags=["deployment"], response_model=APIResponseModel)
+async def create_deployment(namespace: str, deployment: Deployment):
+    return cluster_service.create_deployment(namespace, deployment)
+
+
+@router.delete("/namespaces/{namespace}/deployments/{name}", tags=["deployment"], response_model=APIResponseModel)
+async def delete_deployment(namespace: str, name: str):
+    return cluster_service.delete_deployment(namespace, name)
+
+
+@router.get("/namespaces/{namespace}/services", tags=["service"], response_model=APIResponseModel)
+async def get_services(namespace: str = 'default'):
+    return cluster_service.get_services(namespace)
 
 
