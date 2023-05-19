@@ -13,6 +13,7 @@ from src.version import get_version_info, write_version_py
 from src.exceptions import CustomHTTPError
 from src.cluster import router as cluster_router
 from src.minio_client import router as minio_router
+from src.mlflow_client import router as mlflow_router
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -86,6 +87,7 @@ app = FastAPI(
 
 app.include_router(cluster_router.router)
 app.include_router(minio_router.router)
+app.include_router(mlflow_router.router)
 
 origins = [
     "*"
