@@ -1,12 +1,14 @@
 from kubernetes import client
-from src.cluster.config import get_nfs_config
+from src import app_config
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment, Service, Ingress
+    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment, \
+    Service, Ingress
 
 
-class ClusterTemplateFactory:
+class ClientFactory:
+
     @staticmethod
     def create_client():
         return client.CoreV1Api()
@@ -19,9 +21,8 @@ class ClusterTemplateFactory:
     def create_networking_api():
         return client.NetworkingV1Api()
 
-    @staticmethod
-    def create_custom_api():
-        return client.CustomObjectsApi()
+
+class ClientTemplateFactory:
 
     @staticmethod
     def build_namespace(namespace: str, labels=None):
@@ -34,7 +35,7 @@ class ClusterTemplateFactory:
 
     @staticmethod
     def build_nfs_volume():
-        nfs_server, nfs_path = get_nfs_config()
+        nfs_server, nfs_path = app_config.get_nfs_config()
         return client.V1NFSVolumeSource(
             server=nfs_server,
             path=nfs_path,
@@ -54,7 +55,7 @@ class ClusterTemplateFactory:
             )
         )
         if pv.volume_type == 'nfs':
-            _volume.spec.nfs = ClusterTemplateFactory.build_nfs_volume()
+            _volume.spec.nfs = ClientTemplateFactory.build_nfs_volume()
         return _volume
 
     @staticmethod
@@ -100,10 +101,24 @@ class ClusterTemplateFactory:
             image_pull_policy=container.image_pull_policy,
             args=container.args,
             env=[client.V1EnvVar(name=key, value=value) for key, value in container.env.items()],
-            command=container.command,
-            volume_mounts=[client.V1VolumeMount(
-                name=container.volume_mounts.name,
-                mount_path=container.volume_mounts.mount_path)],
+            resources=client.V1ResourceRequirements(
+                requests={
+                    'cpu': container.cpu,
+                    'memory': container.memory,
+                    'nvidia.com/gpu': container.gpu
+                },
+                limits={
+                    'cpu': container.cpu,
+                    'memory': container.memory,
+                    'nvidia.com/gpu': container.gpu
+                }
+            ),
+            volume_mounts=[
+                client.V1VolumeMount(
+                    name=volume_mount.name,
+                    mount_path=volume_mount.mount_path
+                ) for volume_mount in container.volume_mounts
+            ],
         )
 
     @staticmethod
@@ -117,7 +132,8 @@ class ClusterTemplateFactory:
             volume.secret = client.V1SecretVolumeSource(secret_name=container_volume.type_name)
         if container_volume.type == ContainerVolumeType.ConfigMap:
             volume.config_map = client.V1ConfigMapVolumeSource(name=container_volume.type_name)
-
+        if container_volume.type == ContainerVolumeType.EmptyDir:
+            volume.empty_dir = client.V1EmptyDirVolumeSource(medium=container_volume.type_name)
         return volume
 
     @staticmethod
@@ -134,9 +150,10 @@ class ClusterTemplateFactory:
                 labels=pod.labels
             ),
             spec=client.V1PodSpec(
-                containers=[ClusterTemplateFactory.build_container(container) for container in pod.containers],
-                image_pull_secrets=ClusterTemplateFactory.build_image_pull_secrets(pod.image_pull_secrets),
-                volumes=[ClusterTemplateFactory.build_container_volume(volume) for volume in pod.volumes],
+                containers=[ClientTemplateFactory.build_container(container) for container in pod.containers],
+                image_pull_secrets=ClientTemplateFactory.build_image_pull_secrets(pod.image_pull_secrets),
+                volumes=[ClientTemplateFactory.build_container_volume(volume) for volume in pod.volumes],
+                service_account_name=pod.service_account_name
             )
         )
 
@@ -152,7 +169,7 @@ class ClusterTemplateFactory:
                 selector=client.V1LabelSelector(
                     match_labels=deployment.labels
                 ),
-                template=ClusterTemplateFactory.build_pod(deployment.template_pod)
+                template=ClientTemplateFactory.build_pod(deployment.template_pod)
             )
         )
 

@@ -1,4 +1,4 @@
-from src.cluster.client import ClusterTemplateFactory as Factory, client
+from src.cluster.client import client, ClientFactory, ClientTemplateFactory as Factory
 from src.cluster.utils import Render, response, error_with_message, encode_to_base64
 from src.cluster.models import \
     Volume, VolumeClaim, \
@@ -9,9 +9,9 @@ from src.cluster.models import \
 class ClusterService:
     def __init__(self):
         # Kubernetes API 클라이언트 생성
-        self.cluster_client = Factory.create_client()
-        self.deployment_client = Factory.create_deployment_client()
-        self.network_client = Factory.create_networking_api()
+        self.cluster_client = ClientFactory.create_client()
+        self.deployment_client = ClientFactory.create_deployment_client()
+        self.network_client = ClientFactory.create_networking_api()
         pass
 
     def get_nodes(self):

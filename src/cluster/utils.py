@@ -1,8 +1,7 @@
 import json
 
 from kubernetes import client
-from src.cluster.models import Metadata
-from src.models import APIResponseModel
+from src.models import APIResponseModel, Metadata
 
 
 class Render:

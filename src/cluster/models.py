@@ -2,15 +2,6 @@ from enum import Enum
 from typing import List
 
 from pydantic import BaseModel
-from pydantic.schema import datetime
-
-
-class Metadata(BaseModel):
-    name: str
-    create_date: datetime
-    annotations: dict | None
-    labels: dict | None
-    api_version: str | None
 
 
 class Volume(BaseModel):
@@ -52,6 +43,7 @@ class ContainerVolumeType(Enum):
     PersistentVolumeClaim = 'pvc'
     Secret = 'secret'
     ConfigMap = 'configmap'
+    EmptyDir = 'emptydir'
 
 
 class ContainerVolume(BaseModel):
@@ -65,17 +57,21 @@ class Container(BaseModel):
     image: str = 'nginx'
     image_pull_policy: str = 'IfNotPresent'
     env: dict | None
-    args: List[str] | None
-    command: List[str] | None
-    volume_mounts: ContainerVolumeMounts | None
+    args: List[str] | None = []
+    command: List[str] | None = []
+    volume_mounts: List[ContainerVolumeMounts] | None
+    cpu: str = '0.5'
+    memory: str = '1Gi'
+    gpu: str | None = '0'
 
 
 class Pod(BaseModel):
     name: str
     labels: dict = {}
     containers: List[Container]
-    image_pull_secrets: List[str] | None
-    volumes: List[ContainerVolume] | None
+    image_pull_secrets: List[str] | None = []
+    volumes: List[ContainerVolume] | None = []
+    service_account_name: str | None = ""
 
 
 class Deployment(BaseModel):
