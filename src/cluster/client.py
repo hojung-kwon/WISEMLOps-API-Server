@@ -101,10 +101,24 @@ class ClientTemplateFactory:
             image_pull_policy=container.image_pull_policy,
             args=container.args,
             env=[client.V1EnvVar(name=key, value=value) for key, value in container.env.items()],
-            command=container.command,
-            volume_mounts=[client.V1VolumeMount(
-                name=container.volume_mounts.name,
-                mount_path=container.volume_mounts.mount_path)],
+            resources=client.V1ResourceRequirements(
+                requests={
+                    'cpu': container.cpu,
+                    'memory': container.memory,
+                    'nvidia.com/gpu': container.gpu
+                },
+                limits={
+                    'cpu': container.cpu,
+                    'memory': container.memory,
+                    'nvidia.com/gpu': container.gpu
+                }
+            ),
+            volume_mounts=[
+                client.V1VolumeMount(
+                    name=volume_mount.name,
+                    mount_path=volume_mount.mount_path
+                ) for volume_mount in container.volume_mounts
+            ],
         )
 
     @staticmethod
@@ -118,7 +132,8 @@ class ClientTemplateFactory:
             volume.secret = client.V1SecretVolumeSource(secret_name=container_volume.type_name)
         if container_volume.type == ContainerVolumeType.ConfigMap:
             volume.config_map = client.V1ConfigMapVolumeSource(name=container_volume.type_name)
-
+        if container_volume.type == ContainerVolumeType.EmptyDir:
+            volume.empty_dir = client.V1EmptyDirVolumeSource(medium=container_volume.type_name)
         return volume
 
     @staticmethod
@@ -138,6 +153,7 @@ class ClientTemplateFactory:
                 containers=[ClientTemplateFactory.build_container(container) for container in pod.containers],
                 image_pull_secrets=ClientTemplateFactory.build_image_pull_secrets(pod.image_pull_secrets),
                 volumes=[ClientTemplateFactory.build_container_volume(volume) for volume in pod.volumes],
+                service_account_name=pod.service_account_name
             )
         )
 
