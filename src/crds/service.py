@@ -21,3 +21,15 @@ class CrdService:
         except client.ApiException as e:
             return error_with_message(e)
 
+    def get_notebook(self, namespace: str, name: str):
+        try:
+            result = self.crd_client.get_namespaced_custom_object(
+                group="kubeflow.org",
+                version="v1alpha1",
+                plural="notebooks",
+                namespace=namespace,
+                name=name
+            )
+            return response(result, Render.to_notebook_status_list)
+        except client.ApiException as e:
+            return error_with_message(e)

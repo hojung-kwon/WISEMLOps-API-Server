@@ -9,13 +9,11 @@ class Render:
     @staticmethod
     def _to_status_list(model, to_each_shape: callable):
         result = []
+        if 'items' not in model:
+            return {"result": [to_each_shape(model)]}
         for item in model['items']:
             result.append(to_each_shape(item))
         return {"result": result}
-
-    @staticmethod
-    def to_name_list(model):
-        return {"result": [item['metadata']['name'] for item in model['items']]}
 
     @staticmethod
     def to_no_content(model):
@@ -39,10 +37,21 @@ class Render:
     @staticmethod
     def to_notebook_status(item: dict):
         metadata = Render.metadata_of(item)
-        return {
-            "name": metadata.name,
-            "create_date": metadata.create_date,
-        }
+        containers = item['spec']['template']['spec']['containers']
+        containers_spec = []
+        for container in containers:
+            if 'nvidia.com/gpu' not in container['resources']['limits']:
+                container['resources']['limits']['nvidia.com/gpu'] = 0
+            containers_spec.append({
+                "status": item['status']['conditions'][0]['type'],
+                "name": metadata.name,
+                "created_at": metadata.create_date,
+                "image": container['image'],
+                "gpus": container['resources']['limits']['nvidia.com/gpu'],
+                "cpus": container['resources']['limits']['cpu'],
+                "memory": container['resources']['limits']['memory'],
+            })
+        return containers_spec
 
 
 def error_with_message(e: client.ApiException):

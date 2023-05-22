@@ -12,6 +12,10 @@ router = APIRouter(
 
 
 @router.get("/{namespaces/{namespace}/notebooks", tags=["notebook"], response_model=APIResponseModel)
-async def get_notebooks(namespace: str = 'default'):
+async def get_notebooks(namespace: str = 'kubeflow-user-example-com'):
     return crd_service.get_notebooks(namespace)
 
+
+@router.get("/{namespaces/{namespace}/notebooks/{name}", tags=["notebook"], response_model=APIResponseModel)
+async def get_notebook(namespace: str = 'kubeflow-user-example-com', name: str = ''):
+    return crd_service.get_notebook(namespace, name)
