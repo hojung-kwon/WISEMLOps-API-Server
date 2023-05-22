@@ -1,4 +1,3 @@
-import kfp
 from kubernetes import client
 
 from src.cluster.client import ClientTemplateFactory
@@ -14,10 +13,6 @@ class ClientFactory:
     @staticmethod
     def create_crd_client():
         return client.CustomObjectsApi()
-
-    @staticmethod
-    def create_kfp_client():
-        return kfp.Client()
 
 
 class CrdTemplateFactory:
