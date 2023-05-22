@@ -19,6 +19,7 @@ class Config:
         self.MINIO_ENDPOINT = self._config['MINIO']['ENDPOINT']
         self.MINIO_ACCESS_KEY = self._config['MINIO']['ACCESS_KEY']
         self.MINIO_SECRET_KEY = self._config['MINIO']['SECRET_KEY']
+        self.MLFLOW_TRACKING_URI = self._config['MLFLOW']['TRACKING_URI']
         pass
 
     def load_cluster_config(self):
@@ -28,3 +29,4 @@ class Config:
         nfs_server = self.CLUSTER_VOLUME_NFS_SERVER
         nfs_path = self.CLUSTER_VOLUME_NFS_PATH
         return nfs_server, nfs_path
+    

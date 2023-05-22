@@ -8,6 +8,8 @@ local:
     ENDPOINT: 'http://211.39.140.30:8082'
     ACCESS_KEY: 'HoItKC9L7DkLjenn'
     SECRET_KEY: 'hVQN7JZWrtSvdpfST5Jxv9uXPVmHtGjK'
+  MLFLOW:
+    TRACKING_URI: 'http://localhost:5000'
 
 container:
   CLUSTER:
@@ -19,3 +21,5 @@ container:
     ENDPOINT: 'http://211.39.140.30:8082'
     ACCESS_KEY: 'HoItKC9L7DkLjenn'
     SECRET_KEY: 'hVQN7JZWrtSvdpfST5Jxv9uXPVmHtGjK'
+  MLFLOW:
+    TRACKING_URI: 'http://localhost:5000'
