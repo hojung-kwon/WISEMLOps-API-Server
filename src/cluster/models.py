@@ -7,8 +7,8 @@ from pydantic.schema import datetime
 
 class Metadata(BaseModel):
     name: str
-    labels: dict = {}
-    annotations: dict = {}
+    labels: Optional[dict] = {}
+    annotations: Optional[dict] = {}
     create_date: datetime = None
 
 
