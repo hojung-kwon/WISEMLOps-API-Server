@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
 from pydantic.schema import datetime
@@ -9,7 +9,7 @@ class Metadata(BaseModel):
     name: str
     labels: dict = {}
     annotations: dict = {}
-    create_date: datetime = None
+    create_date: datetime | None = None
 
 
 class Volume(BaseModel):
@@ -62,21 +62,21 @@ class Container(BaseModel):
     name: str
     image: str = 'nginx'
     image_pull_policy: str = 'IfNotPresent'
-    env: dict = {}
-    args: List[str] = []
-    command: List[str] = []
-    volume_mounts: List[ContainerVolumeMounts]
+    env: dict | None
+    args: List[str] | None = []
+    command: List[str] | None = []
+    volume_mounts: List[ContainerVolumeMounts] | None
     cpu: str = '0.5'
     memory: str = '1Gi'
-    gpu: str = '0'
+    gpu: str | None = '0'
 
 
 class Pod(BaseModel):
     metadata: Metadata
     containers: List[Container]
-    image_pull_secrets: List[str] = []
-    volumes: List[ContainerVolume] = []
-    service_account_name: Optional[str]
+    image_pull_secrets: List[str] | None = []
+    volumes: List[ContainerVolume] | None = []
+    service_account_name: str | None = ""
 
 
 class Deployment(BaseModel):
@@ -95,7 +95,7 @@ class ServicePort(BaseModel):
     name: str
     port: int
     target_port: int
-    node_port: Optional[int]
+    node_port: int | None = None
     protocol: str = 'TCP'
 
 
@@ -109,7 +109,7 @@ class Service(BaseModel):
 class IngressPath(BaseModel):
     path: str
     path_type: str = 'Prefix'
-    service_name: Optional[str]
+    service_name: str | None = None
     service_port: int
 
 
