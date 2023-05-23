@@ -1,7 +1,9 @@
 import json
 
 from kubernetes import client
-from src.models import APIResponseModel, Metadata
+
+from src.cluster.models import Metadata
+from src.models import APIResponseModel
 
 
 class Render:
@@ -24,10 +26,9 @@ class Render:
         # key-value 형태로 반환
         return Metadata(
             name=item['metadata']['name'],
-            create_date=item['metadata']['creationTimestamp'],
-            annotations=item['metadata']['annotations'],
             labels=item['metadata']['labels'],
-            api_version=item['apiVersion'],
+            annotations=item['metadata']['annotations'],
+            create_date=item['metadata']['creationTimestamp'],
         )
 
     @staticmethod
