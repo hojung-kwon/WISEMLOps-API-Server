@@ -1,7 +1,6 @@
 from typing import Any
 
 from pydantic import BaseModel
-from pydantic.schema import datetime
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
 
@@ -18,14 +17,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     items = relationship("Item", back_populates="owner")
-
-
-class Metadata(BaseModel):
-    name: str
-    create_date: datetime
-    annotations: dict | None
-    labels: dict | None
-    api_version: str | None
 
 
 class APIResponseModel(BaseModel):

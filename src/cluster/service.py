@@ -3,7 +3,7 @@ from src.cluster.utils import Render, response, error_with_message, encode_to_ba
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Pod, Deployment, Service, Ingress
+    Pod, Deployment, Service, Ingress, Metadata
 
 
 class ClusterService:
@@ -28,10 +28,9 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def create_namespace(self, namespace: str, labels: dict = None, istio: bool = False):
+    def create_namespace(self, metadata: Metadata):
         try:
-            labels['istio-injection'] = 'enabled' if istio else 'disabled'
-            body = Factory.build_namespace(namespace, labels)
+            body = Factory.build_namespace(metadata)
             result = self.cluster_client.create_namespace(body=body)
             return response(result, Render.to_no_content)
         except client.ApiException as e:

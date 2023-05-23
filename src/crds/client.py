@@ -18,27 +18,20 @@ class ClientFactory:
 class CrdTemplateFactory:
 
     @staticmethod
-    def build_namespace(namespace: str, labels=None):
-        return client.V1Namespace(
-            metadata=client.V1ObjectMeta(
-                name=namespace,
-                labels=labels
-            )
-        )
-
-    @staticmethod
     def build_notebook(notebook: Notebook):
-        pod = ClientTemplateFactory.build_pod(notebook.template_pod)
+        notebook.metadata.labels.update({
+            "access-ml-pipeline": "true",
+            "sidecar.istio.io/inject": "true"
+        })
+        notebook.metadata.annotations.update({
+            "notebooks.kubeflow.org/server-type": "jupyter"
+        })
         return {
             "apiVersion": "kubeflow.org/v1alpha1",
             "kind": "Notebook",
-            "metadata": {
-                "name": notebook.name,
-                "labels": notebook.labels,
-                "annotations": notebook.annotations
-            },
+            "metadata": ClientTemplateFactory.build_metadata(notebook.metadata),
             "spec": {
-                "template": pod
+                "template": ClientTemplateFactory.build_pod(notebook.template_pod)
             }
         }
 

@@ -2,6 +2,14 @@ from enum import Enum
 from typing import List
 
 from pydantic import BaseModel
+from pydantic.schema import datetime
+
+
+class Metadata(BaseModel):
+    name: str
+    labels: dict = {}
+    annotations: dict = {}
+    create_date: datetime | None = None
 
 
 class Volume(BaseModel):
@@ -22,16 +30,14 @@ class VolumeClaim(BaseModel):
 
 
 class ConfigMap(BaseModel):
-    name: str
+    metadata: Metadata
     data: dict = {}
-    labels: dict | None = {}
 
 
 class Secret(BaseModel):
-    name: str
-    data: dict = {}
-    labels: dict = {}
+    metadata: Metadata
     type: str = 'Opaque'
+    data: dict = {}
 
 
 class ContainerVolumeMounts(BaseModel):
@@ -66,9 +72,7 @@ class Container(BaseModel):
 
 
 class Pod(BaseModel):
-    name: str
-    labels: dict = {}
-    annotations: dict = {}
+    metadata: Metadata
     containers: List[Container]
     image_pull_secrets: List[str] | None = []
     volumes: List[ContainerVolume] | None = []
@@ -76,10 +80,8 @@ class Pod(BaseModel):
 
 
 class Deployment(BaseModel):
-    name: str
+    metadata: Metadata
     replicas: int = 1
-    labels: dict = {}
-    annotations: dict = {}
     template_pod: Pod
 
 
@@ -98,10 +100,10 @@ class ServicePort(BaseModel):
 
 
 class Service(BaseModel):
-    name: str
-    labels: dict = {}
+    metadata: Metadata
     type: ServiceType = ServiceType.ClusterIP
     ports: List[ServicePort]
+    selectors: dict = {}
 
 
 class IngressPath(BaseModel):
@@ -117,8 +119,6 @@ class IngressRule(BaseModel):
 
 
 class Ingress(BaseModel):
-    name: str
-    labels: dict = {}
-    annotations: dict = {'nginx.ingress.kubernetes.io/rewrite-target': '/'}
+    metadata: Metadata
     ingress_class_name: str = 'nginx'
     rules: List[IngressRule]

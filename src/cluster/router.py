@@ -6,7 +6,8 @@ from src.cluster import cluster_service
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Pod, Deployment, Service, Ingress
+    Pod, Deployment, \
+    Service, Ingress, Metadata
 
 router = APIRouter(
     prefix="/cluster",
@@ -25,9 +26,9 @@ async def get_namespaces():
     return cluster_service.get_namespaces()
 
 
-@router.post("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
-async def create_namespace(namespace: str, labels: dict = None, istio: bool = False):
-    return cluster_service.create_namespace(namespace, labels, istio)
+@router.post("/namespaces/", tags=["namespace"], response_model=APIResponseModel)
+async def create_namespace(metadata: Metadata):
+    return cluster_service.create_namespace(metadata)
 
 
 @router.delete("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)

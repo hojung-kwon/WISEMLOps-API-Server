@@ -1,15 +1,8 @@
 from pydantic import BaseModel
 
-from src.cluster.models import Pod
+from src.cluster.models import Pod, Metadata
 
 
 class Notebook(BaseModel):
-    name: str
-    labels: dict = {
-        "access-ml-pipeline": "true",
-        "sidecar.istio.io/inject": "true"
-    }
-    annotations: dict = {
-        "notebooks.kubeflow.org/server-type": "jupyter"
-    }
+    metadata: Metadata
     template_pod: Pod

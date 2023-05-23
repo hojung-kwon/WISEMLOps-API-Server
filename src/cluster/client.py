@@ -3,8 +3,9 @@ from src import app_config
 from src.cluster.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
-    Container, ContainerVolume, ContainerVolumeType, Pod, Deployment, \
-    Service, Ingress
+    Container, ContainerVolume, ContainerVolumeType, \
+    Pod, Deployment, \
+    Service, Ingress, Metadata
 
 
 class ClientFactory:
@@ -25,12 +26,17 @@ class ClientFactory:
 class ClientTemplateFactory:
 
     @staticmethod
-    def build_namespace(namespace: str, labels=None):
+    def build_metadata(metadata: Metadata):
+        return client.V1ObjectMeta(
+            name=metadata.name,
+            labels=metadata.labels,
+            annotations=metadata.annotations
+        )
+
+    @staticmethod
+    def build_namespace(metadata: Metadata):
         return client.V1Namespace(
-            metadata=client.V1ObjectMeta(
-                name=namespace,
-                labels=labels
-            )
+            metadata=ClientTemplateFactory.build_metadata(metadata)
         )
 
     @staticmethod
@@ -75,20 +81,14 @@ class ClientTemplateFactory:
     @staticmethod
     def build_configmap(config_map: ConfigMap):
         return client.V1ConfigMap(
-            metadata=client.V1ObjectMeta(
-                name=config_map.name,
-                labels=config_map.labels
-            ),
+            metadata=ClientTemplateFactory.build_metadata(config_map.metadata),
             data=config_map.data
         )
 
     @staticmethod
     def build_secret(secret: Secret):
         return client.V1Secret(
-            metadata=client.V1ObjectMeta(
-                name=secret.name,
-                labels=secret.labels
-            ),
+            metadata=ClientTemplateFactory.build_metadata(secret.metadata),
             data=secret.data,
             type=secret.type
         )
@@ -145,11 +145,7 @@ class ClientTemplateFactory:
     @staticmethod
     def build_pod(pod: Pod):
         return client.V1Pod(
-            metadata=client.V1ObjectMeta(
-                name=pod.name,
-                labels=pod.labels,
-                annotations=pod.annotations
-            ),
+            metadata=ClientTemplateFactory.build_metadata(pod.metadata),
             spec=client.V1PodSpec(
                 containers=[ClientTemplateFactory.build_container(container) for container in pod.containers],
                 image_pull_secrets=ClientTemplateFactory.build_image_pull_secrets(pod.image_pull_secrets),
@@ -160,16 +156,14 @@ class ClientTemplateFactory:
 
     @staticmethod
     def build_deployment(deployment: Deployment):
+        deployment.metadata.labels['app'] = deployment.metadata.name
+        deployment.template_pod.metadata.labels['app'] = deployment.metadata.name
         return client.V1Deployment(
-            metadata=client.V1ObjectMeta(
-                name=deployment.name,
-                labels=deployment.labels,
-                annotations=deployment.annotations
-            ),
+            metadata=ClientTemplateFactory.build_metadata(deployment.metadata),
             spec=client.V1DeploymentSpec(
                 replicas=deployment.replicas,
                 selector=client.V1LabelSelector(
-                    match_labels=deployment.labels
+                    match_labels=deployment.metadata.labels
                 ),
                 template=ClientTemplateFactory.build_pod(deployment.template_pod)
             )
@@ -178,13 +172,10 @@ class ClientTemplateFactory:
     @staticmethod
     def build_service(service: Service):
         return client.V1Service(
-            metadata=client.V1ObjectMeta(
-                name=service.name,
-                labels=service.labels
-            ),
+            metadata=ClientTemplateFactory.build_metadata(service.metadata),
             spec=client.V1ServiceSpec(
                 type=service.type.value,
-                selector=service.labels,
+                selector=service.selectors,
                 ports=[client.V1ServicePort(
                     name=port.name,
                     port=port.port,
@@ -197,12 +188,11 @@ class ClientTemplateFactory:
 
     @staticmethod
     def build_ingress(ingress: Ingress):
+        ingress.metadata.annotations.update({
+            'nginx.ingress.kubernetes.io/rewrite-target': '/'
+        })
         return client.V1Ingress(
-            metadata=client.V1ObjectMeta(
-                name=ingress.name,
-                labels=ingress.labels,
-                annotations=ingress.annotations
-            ),
+            metadata=ClientTemplateFactory.build_metadata(ingress.metadata),
             spec=client.V1IngressSpec(
                 ingress_class_name=ingress.ingress_class_name,
                 rules=[client.V1IngressRule(
