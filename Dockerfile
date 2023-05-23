@@ -1,4 +1,4 @@
-FROM python:3.10.11-slim
+FROM python:3.9-slim
 
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
