@@ -147,7 +147,8 @@ class ClientTemplateFactory:
         return client.V1Pod(
             metadata=client.V1ObjectMeta(
                 name=pod.name,
-                labels=pod.labels
+                labels=pod.labels,
+                annotations=pod.annotations
             ),
             spec=client.V1PodSpec(
                 containers=[ClientTemplateFactory.build_container(container) for container in pod.containers],
@@ -162,7 +163,8 @@ class ClientTemplateFactory:
         return client.V1Deployment(
             metadata=client.V1ObjectMeta(
                 name=deployment.name,
-                labels=deployment.labels
+                labels=deployment.labels,
+                annotations=deployment.annotations
             ),
             spec=client.V1DeploymentSpec(
                 replicas=deployment.replicas,
