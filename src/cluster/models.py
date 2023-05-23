@@ -68,6 +68,7 @@ class Container(BaseModel):
 class Pod(BaseModel):
     name: str
     labels: dict = {}
+    annotations: dict = {}
     containers: List[Container]
     image_pull_secrets: List[str] | None = []
     volumes: List[ContainerVolume] | None = []
@@ -78,6 +79,7 @@ class Deployment(BaseModel):
     name: str
     replicas: int = 1
     labels: dict = {}
+    annotations: dict = {}
     template_pod: Pod
 
 

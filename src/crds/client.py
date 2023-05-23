@@ -28,18 +28,17 @@ class CrdTemplateFactory:
 
     @staticmethod
     def build_notebook(notebook: Notebook):
-        template_pod = ClientTemplateFactory.build_pod(notebook.template_pod).spec
+        pod = ClientTemplateFactory.build_pod(notebook.template_pod)
         return {
             "apiVersion": "kubeflow.org/v1alpha1",
             "kind": "Notebook",
             "metadata": {
                 "name": notebook.name,
-                "labels": notebook.labels
+                "labels": notebook.labels,
+                "annotations": notebook.annotations
             },
             "spec": {
-                "template": {
-                    "spec": template_pod
-                },
+                "template": pod
             }
         }
 

@@ -7,6 +7,7 @@ class Notebook(BaseModel):
     name: str
     labels: dict = {
         "access-ml-pipeline": "true",
+        "sidecar.istio.io/inject": "true"
     }
     annotations: dict = {
         "notebooks.kubeflow.org/server-type": "jupyter"
