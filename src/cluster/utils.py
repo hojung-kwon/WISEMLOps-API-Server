@@ -123,6 +123,7 @@ class Render:
             "name": metadata.name,
             # ready인 pod 수/total
             "ready": f"{ready}/{total}",
+            "containers": [container.name for container in item.spec.containers],
             "status": item.status.phase,
             "restarts": item.status.container_statuses[0].restart_count,
             "create_date": metadata.create_date,
