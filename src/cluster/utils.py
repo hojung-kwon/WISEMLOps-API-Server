@@ -129,6 +129,39 @@ class Render:
         }
 
     @staticmethod
+    def to_pod_detail(item):
+        metadata = Render.metadata_of(item)
+        _spec = item.spec
+        _containers = _spec.containers
+        volumes = _spec.volumes
+        conditions = item.status.conditions
+        return {'result': [{
+            "name": metadata.name,
+            "labels": metadata.labels,
+            "annotations": metadata.annotations,
+            "image": _containers[0].image,
+            "min_cpu": _containers[0].resources.requests['cpu'],
+            "max_cpu": _containers[0].resources.limits['cpu'],
+            "min_memory": _containers[0].resources.requests['memory'],
+            "max_memory": _containers[0].resources.limits['memory'],
+            "min_gpu": _containers[0].resources.requests['nvidia.com/gpu'],
+            "max_gpu": _containers[0].resources.limits['nvidia.com/gpu'],
+            "create_date": metadata.create_date,
+            "conditions": conditions,
+            "volumes": volumes,
+        }]}
+
+    @staticmethod
+    def to_pod_logs(items: dict):
+        for container in items.keys():
+            items[container] = items[container].split("\n")
+        return {"result": [items]}
+
+    @staticmethod
+    def to_container_logs(item: str):
+        return {"result": item.split("\n")}
+
+    @staticmethod
     def to_deployment_status_list(model):
         return Render._to_status_list(model, Render.to_deployment_status)
 

@@ -102,8 +102,18 @@ async def delete_secret(namespace: str, name: str):
 
 
 @router.get("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)
-async def get_list_namespaced_pod(namespace: str = 'default'):
+async def get_pods(namespace: str = 'default'):
     return cluster_service.get_pods(namespace)
+
+
+@router.get("/namespaces/{namespace}/pods/{name}/logs", tags=["pod"], response_model=APIResponseModel)
+async def get_pod_logs(namespace: str, name: str,):
+    return cluster_service.get_pod_logs(namespace, name)
+
+
+@router.get("/namespaces/{namespace}/pods/{name}/logs/{container}", tags=["pod"], response_model=APIResponseModel)
+async def get_container_logs(namespace: str, name: str, container: str):
+    return cluster_service.get_container_logs(namespace, name, container)
 
 
 @router.post("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)

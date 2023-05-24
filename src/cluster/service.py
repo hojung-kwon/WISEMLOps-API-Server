@@ -163,6 +163,32 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
+    def get_pod_logs(self, namespace: str = 'default', name: str = ''):
+        try:
+            read_pod_result = self.cluster_client.read_namespaced_pod(namespace=namespace, name=name)
+            result = {}
+            for container in read_pod_result.spec.containers:
+                logs = self.cluster_client.read_namespaced_pod_log(
+                    namespace=namespace,
+                    name=name,
+                    container=container.name,
+                )
+                result[container.name] = logs
+            return response(result, Render.to_pod_logs)
+        except client.ApiException as e:
+            return error_with_message(e)
+
+    def get_container_logs(self, namespace: str = 'default', name: str = '', container: str = ''):
+        try:
+            result = self.cluster_client.read_namespaced_pod_log(
+                namespace=namespace,
+                name=name,
+                container=container,
+            )
+            return response(result, Render.to_container_logs)
+        except client.ApiException as e:
+            return error_with_message(e)
+
     def get_deployments(self, namespace: str = 'default'):
         try:
             result = self.deployment_client.list_namespaced_deployment(namespace=namespace)
