@@ -1,11 +1,8 @@
 from kubernetes import client
 from src import app_config
-from src.kubernetes_client.models import \
-    Volume, VolumeClaim, \
-    ConfigMap, Secret, \
+from src.kubernetes_client.models import Volume, VolumeClaim, ConfigMap, Secret, \
     Container, ContainerVolume, ContainerVolumeType, \
-    Pod, Deployment, \
-    Service, Ingress, Metadata
+    Pod, Deployment, Service, Ingress, Metadata, Notebook
 
 
 class ClientFactory:
@@ -21,6 +18,14 @@ class ClientFactory:
     @staticmethod
     def create_networking_api():
         return client.NetworkingV1Api()
+
+    @staticmethod
+    def create_api_client():
+        return client.ApiClient()
+
+    @staticmethod
+    def create_crd_client():
+        return client.CustomObjectsApi()
 
 
 class ResourceFactory:
@@ -215,4 +220,20 @@ class ResourceFactory:
             )
         )
 
-
+    @staticmethod
+    def build_notebook(notebook: Notebook):
+        notebook.metadata.labels.update({
+            "access-ml-pipeline": "true",
+            "sidecar.istio.io/inject": "true"
+        })
+        notebook.metadata.annotations.update({
+            "notebooks.kubeflow.org/server-type": "jupyter"
+        })
+        return {
+            "apiVersion": "kubeflow.org/v1alpha1",
+            "kind": "Notebook",
+            "metadata": ResourceFactory.build_metadata(notebook.metadata),
+            "spec": {
+                "template": ResourceFactory.build_pod(notebook.template_pod)
+            }
+        }

@@ -1,8 +1,8 @@
 import yaml
 from kubernetes import client
-from src.crds.client import ClientFactory, CrdTemplateFactory
-from src.crds.utils import Render, response, error_with_message
-from src.crds.models import Notebook
+from src.kubernetes_client.crds.utils import Render, response, error_with_message
+from src.kubernetes_client.client import ClientFactory, ResourceFactory
+from src.kubernetes_client.models import Notebook
 
 
 class CrdService:
@@ -24,7 +24,7 @@ class CrdService:
 
     def create_notebook(self, namespace: str, notebook: Notebook):
         try:
-            body = CrdTemplateFactory.build_notebook(notebook)
+            body = ResourceFactory.build_notebook(notebook)
             result = self.crd_client.create_namespaced_custom_object(
                 group="kubeflow.org", version="v1alpha1",
                 plural="notebooks",
