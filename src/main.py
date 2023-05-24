@@ -11,8 +11,8 @@ from fastapi import FastAPI, Request
 
 from src.version import get_version_info, write_version_py
 from src.exceptions import CustomHTTPError
-from src.cluster import router as cluster_router
-from src.crds import router as crd_router
+from src.kubernetes_client.cluster import router as cluster_router
+from src.kubernetes_client.crds import router as crd_router
 from src.minio_client import router as minio_router
 from src.mlflow_client import router as mlflow_router
 

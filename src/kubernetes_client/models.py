@@ -122,3 +122,9 @@ class Ingress(BaseModel):
     metadata: Metadata
     ingress_class_name: str = 'nginx'
     rules: List[IngressRule]
+
+
+class Notebook(BaseModel):
+    metadata: Metadata
+    template_pod: Pod
+

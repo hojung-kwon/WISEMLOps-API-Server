@@ -1,17 +1,14 @@
 from kubernetes import client
 from src import app_config
-from src.cluster.models import \
-    Volume, VolumeClaim, \
-    ConfigMap, Secret, \
+from src.kubernetes_client.models import Volume, VolumeClaim, ConfigMap, Secret, \
     Container, ContainerVolume, ContainerVolumeType, \
-    Pod, Deployment, \
-    Service, Ingress, Metadata
+    Pod, Deployment, Service, Ingress, Metadata, Notebook
 
 
 class ClientFactory:
 
     @staticmethod
-    def create_client():
+    def create_core_client():
         return client.CoreV1Api()
 
     @staticmethod
@@ -19,11 +16,19 @@ class ClientFactory:
         return client.AppsV1Api()
 
     @staticmethod
-    def create_networking_api():
+    def create_networking_client():
         return client.NetworkingV1Api()
 
+    @staticmethod
+    def create_api_client():
+        return client.ApiClient()
 
-class ClientTemplateFactory:
+    @staticmethod
+    def create_crd_client():
+        return client.CustomObjectsApi()
+
+
+class ResourceFactory:
 
     @staticmethod
     def build_metadata(metadata: Metadata):
@@ -36,7 +41,7 @@ class ClientTemplateFactory:
     @staticmethod
     def build_namespace(metadata: Metadata):
         return client.V1Namespace(
-            metadata=ClientTemplateFactory.build_metadata(metadata)
+            metadata=ResourceFactory.build_metadata(metadata)
         )
 
     @staticmethod
@@ -61,7 +66,7 @@ class ClientTemplateFactory:
             )
         )
         if pv.volume_type == 'nfs':
-            _volume.spec.nfs = ClientTemplateFactory.build_nfs_volume()
+            _volume.spec.nfs = ResourceFactory.build_nfs_volume()
         return _volume
 
     @staticmethod
@@ -81,14 +86,14 @@ class ClientTemplateFactory:
     @staticmethod
     def build_configmap(config_map: ConfigMap):
         return client.V1ConfigMap(
-            metadata=ClientTemplateFactory.build_metadata(config_map.metadata),
+            metadata=ResourceFactory.build_metadata(config_map.metadata),
             data=config_map.data
         )
 
     @staticmethod
     def build_secret(secret: Secret):
         return client.V1Secret(
-            metadata=ClientTemplateFactory.build_metadata(secret.metadata),
+            metadata=ResourceFactory.build_metadata(secret.metadata),
             data=secret.data,
             type=secret.type
         )
@@ -145,11 +150,11 @@ class ClientTemplateFactory:
     @staticmethod
     def build_pod(pod: Pod):
         return client.V1Pod(
-            metadata=ClientTemplateFactory.build_metadata(pod.metadata),
+            metadata=ResourceFactory.build_metadata(pod.metadata),
             spec=client.V1PodSpec(
-                containers=[ClientTemplateFactory.build_container(container) for container in pod.containers],
-                image_pull_secrets=ClientTemplateFactory.build_image_pull_secrets(pod.image_pull_secrets),
-                volumes=[ClientTemplateFactory.build_container_volume(volume) for volume in pod.volumes],
+                containers=[ResourceFactory.build_container(container) for container in pod.containers],
+                image_pull_secrets=ResourceFactory.build_image_pull_secrets(pod.image_pull_secrets),
+                volumes=[ResourceFactory.build_container_volume(volume) for volume in pod.volumes],
                 service_account_name=pod.service_account_name
             )
         )
@@ -159,20 +164,20 @@ class ClientTemplateFactory:
         deployment.metadata.labels['app'] = deployment.metadata.name
         deployment.template_pod.metadata.labels['app'] = deployment.metadata.name
         return client.V1Deployment(
-            metadata=ClientTemplateFactory.build_metadata(deployment.metadata),
+            metadata=ResourceFactory.build_metadata(deployment.metadata),
             spec=client.V1DeploymentSpec(
                 replicas=deployment.replicas,
                 selector=client.V1LabelSelector(
                     match_labels=deployment.metadata.labels
                 ),
-                template=ClientTemplateFactory.build_pod(deployment.template_pod)
+                template=ResourceFactory.build_pod(deployment.template_pod)
             )
         )
 
     @staticmethod
     def build_service(service: Service):
         return client.V1Service(
-            metadata=ClientTemplateFactory.build_metadata(service.metadata),
+            metadata=ResourceFactory.build_metadata(service.metadata),
             spec=client.V1ServiceSpec(
                 type=service.type.value,
                 selector=service.selectors,
@@ -192,7 +197,7 @@ class ClientTemplateFactory:
             'nginx.ingress.kubernetes.io/rewrite-target': '/'
         })
         return client.V1Ingress(
-            metadata=ClientTemplateFactory.build_metadata(ingress.metadata),
+            metadata=ResourceFactory.build_metadata(ingress.metadata),
             spec=client.V1IngressSpec(
                 ingress_class_name=ingress.ingress_class_name,
                 rules=[client.V1IngressRule(
@@ -215,4 +220,20 @@ class ClientTemplateFactory:
             )
         )
 
-
+    @staticmethod
+    def build_notebook(notebook: Notebook):
+        notebook.metadata.labels.update({
+            "access-ml-pipeline": "true",
+            "sidecar.istio.io/inject": "true"
+        })
+        notebook.metadata.annotations.update({
+            "notebooks.kubeflow.org/server-type": "jupyter"
+        })
+        return {
+            "apiVersion": "kubeflow.org/v1alpha1",
+            "kind": "Notebook",
+            "metadata": ResourceFactory.build_metadata(notebook.metadata),
+            "spec": {
+                "template": ResourceFactory.build_pod(notebook.template_pod)
+            }
+        }

@@ -1,14 +1,16 @@
 import yaml
 from kubernetes import client
-from src.crds.client import ClientFactory, CrdTemplateFactory
-from src.crds.utils import Render, response, error_with_message
-from src.crds.models import Notebook
+from kubernetes.client import ApiClient, CustomObjectsApi
+
+from src.kubernetes_client.crds.utils import Render, response, error_with_message
+from src.kubernetes_client.client import ResourceFactory
+from src.kubernetes_client.models import Notebook
 
 
 class CrdService:
-    def __init__(self):
-        self.api_client = ClientFactory.create_api_client()
-        self.crd_client = ClientFactory.create_crd_client()
+    def __init__(self, api_client: ApiClient, crd_client: CustomObjectsApi):
+        self.api_client = api_client
+        self.crd_client = crd_client
         pass
 
     def get_notebooks(self, namespace: str):
@@ -24,7 +26,7 @@ class CrdService:
 
     def create_notebook(self, namespace: str, notebook: Notebook):
         try:
-            body = CrdTemplateFactory.build_notebook(notebook)
+            body = ResourceFactory.build_notebook(notebook)
             result = self.crd_client.create_namespaced_custom_object(
                 group="kubeflow.org", version="v1alpha1",
                 plural="notebooks",
