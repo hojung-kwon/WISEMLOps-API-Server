@@ -37,8 +37,8 @@ async def delete_namespace(namespace: str):
 
 
 @router.patch("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
-async def update_namespace(namespace: str, labels: dict = None, istio: bool = False):
-    return cluster_service.update_namespace(namespace, labels, istio)
+async def update_namespace(metadata: Metadata):
+    return cluster_service.update_namespace(metadata)
 
 
 @router.get("/volumes", tags=["volume"], response_model=APIResponseModel)

@@ -43,11 +43,10 @@ class ClusterService:
         except client.ApiException as e:
             return error_with_message(e)
 
-    def update_namespace(self, namespace: str, labels: dict = None, istio: bool = False):
+    def update_namespace(self, metadata: Metadata):
         try:
-            labels['istio-injection'] = 'enabled' if istio else 'disabled'
-            body = Factory.build_namespace(namespace, labels)
-            result = self.cluster_client.patch_namespace(name=namespace, body=body)
+            body = Factory.build_namespace(metadata)
+            result = self.cluster_client.patch_namespace(name=metadata.name, body=body)
             return response(result, Render.to_no_content)
         except client.ApiException as e:
             return error_with_message(e)
@@ -254,3 +253,4 @@ class ClusterService:
             return response(result, Render.to_no_content)
         except client.ApiException as e:
             return error_with_message(e)
+
