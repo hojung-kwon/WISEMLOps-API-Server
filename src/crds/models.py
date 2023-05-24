@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.cluster.models import Pod, Metadata
+from src.kubernetes_client.models import Pod, Metadata
 
 
 class Notebook(BaseModel):

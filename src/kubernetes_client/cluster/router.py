@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from src.models import APIResponseModel
-from src.cluster import cluster_service
-from src.cluster.models import \
+from src.kubernetes_client.cluster import cluster_service
+from src.kubernetes_client.models import \
     Volume, VolumeClaim, \
     ConfigMap, Secret, \
     Pod, Deployment, \

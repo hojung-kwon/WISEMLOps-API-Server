@@ -1,6 +1,6 @@
 from kubernetes import client
 
-from src.cluster.client import ClientTemplateFactory
+from src.kubernetes_client.client import ResourceFactory
 from src.crds.models import Notebook
 
 
@@ -29,9 +29,9 @@ class CrdTemplateFactory:
         return {
             "apiVersion": "kubeflow.org/v1alpha1",
             "kind": "Notebook",
-            "metadata": ClientTemplateFactory.build_metadata(notebook.metadata),
+            "metadata": ResourceFactory.build_metadata(notebook.metadata),
             "spec": {
-                "template": ClientTemplateFactory.build_pod(notebook.template_pod)
+                "template": ResourceFactory.build_pod(notebook.template_pod)
             }
         }
 

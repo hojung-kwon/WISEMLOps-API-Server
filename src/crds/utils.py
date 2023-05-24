@@ -2,7 +2,7 @@ import json
 
 from kubernetes import client
 
-from src.cluster.models import Metadata
+from src.kubernetes_client.models import Metadata
 from src.models import APIResponseModel
 
 

@@ -1,8 +1,6 @@
-from src.cluster.client import client, ClientFactory, ClientTemplateFactory as Factory
-from src.cluster.utils import Render, response, error_with_message, encode_to_base64
-from src.cluster.models import \
-    Volume, VolumeClaim, \
-    ConfigMap, Secret, \
+from src.kubernetes_client.client import client, ClientFactory, ResourceFactory as Factory
+from src.kubernetes_client.cluster.utils import Render, response, error_with_message, encode_to_base64
+from src.kubernetes_client.models import Volume, VolumeClaim, ConfigMap, Secret, \
     Pod, Deployment, Service, Ingress, Metadata
 
 
