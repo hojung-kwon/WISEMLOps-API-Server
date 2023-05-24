@@ -1,14 +1,16 @@
 import yaml
 from kubernetes import client
+from kubernetes.client import ApiClient, CustomObjectsApi
+
 from src.kubernetes_client.crds.utils import Render, response, error_with_message
-from src.kubernetes_client.client import ClientFactory, ResourceFactory
+from src.kubernetes_client.client import ResourceFactory
 from src.kubernetes_client.models import Notebook
 
 
 class CrdService:
-    def __init__(self):
-        self.api_client = ClientFactory.create_api_client()
-        self.crd_client = ClientFactory.create_crd_client()
+    def __init__(self, api_client: ApiClient, crd_client: CustomObjectsApi):
+        self.api_client = api_client
+        self.crd_client = crd_client
         pass
 
     def get_notebooks(self, namespace: str):
