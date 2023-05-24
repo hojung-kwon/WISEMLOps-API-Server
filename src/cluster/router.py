@@ -37,8 +37,8 @@ async def delete_namespace(namespace: str):
 
 
 @router.patch("/namespaces/{namespace}", tags=["namespace"], response_model=APIResponseModel)
-async def update_namespace(namespace: str, labels: dict = None, istio: bool = False):
-    return cluster_service.update_namespace(namespace, labels, istio)
+async def update_namespace(metadata: Metadata):
+    return cluster_service.update_namespace(metadata)
 
 
 @router.get("/volumes", tags=["volume"], response_model=APIResponseModel)
@@ -102,8 +102,23 @@ async def delete_secret(namespace: str, name: str):
 
 
 @router.get("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)
-async def get_list_namespaced_pod(namespace: str = 'default'):
-    return cluster_service.get_pods(namespace)
+async def get_pods(namespace: str = 'default', label_selector: str = None):
+    return cluster_service.get_pods(namespace, label_selector)
+
+
+@router.post("/namespaces/{namespace}/logs", tags=["pod"], response_model=APIResponseModel)
+async def find_specific_pod_logs(namespace: str, label_selector: str = None):
+    return cluster_service.find_specific_pod_logs(namespace, label_selector)
+
+
+@router.get("/namespaces/{namespace}/pods/{name}/logs", tags=["pod"], response_model=APIResponseModel)
+async def get_pod_logs(namespace: str, name: str):
+    return cluster_service.get_pod_logs(namespace, name)
+
+
+@router.get("/namespaces/{namespace}/pods/{name}/logs/{container}", tags=["pod"], response_model=APIResponseModel)
+async def get_container_logs(namespace: str, name: str, container: str):
+    return cluster_service.get_container_logs(namespace, name, container)
 
 
 @router.post("/namespaces/{namespace}/pods", tags=["pod"], response_model=APIResponseModel)

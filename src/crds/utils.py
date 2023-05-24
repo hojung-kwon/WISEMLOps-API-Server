@@ -39,20 +39,46 @@ class Render:
     def to_notebook_status(item: dict):
         metadata = Render.metadata_of(item)
         containers = item['spec']['template']['spec']['containers']
-        containers_spec = []
-        for container in containers:
-            if 'nvidia.com/gpu' not in container['resources']['limits']:
-                container['resources']['limits']['nvidia.com/gpu'] = 0
-            containers_spec.append({
-                "status": item['status']['conditions'][0]['type'],
+        notebook = containers[0]
+
+        if 'nvidia.com/gpu' not in notebook['resources']['limits']:
+            notebook['resources']['limits']['nvidia.com/gpu'] = 0
+
+        return {
+            "status": item['status']['conditions'][0]['type'],
+            "name": metadata.name,
+            "created_at": metadata.create_date,
+            "image": notebook['image'],
+            "gpus": notebook['resources']['limits']['nvidia.com/gpu'],
+            "cpus": notebook['resources']['limits']['cpu'],
+            "memory": notebook['resources']['limits']['memory'],
+        }
+
+    @staticmethod
+    def to_notebook_overview(item: dict):
+        metadata = Render.metadata_of(item)
+        _spec = item['spec']['template']['spec']
+        _notebook = _spec['containers'][0]
+        volumes = _spec['volumes']
+        image = _notebook['image']
+        conditions = item['status']['conditions']
+        return {
+            "result": {
                 "name": metadata.name,
-                "created_at": metadata.create_date,
-                "image": container['image'],
-                "gpus": container['resources']['limits']['nvidia.com/gpu'],
-                "cpus": container['resources']['limits']['cpu'],
-                "memory": container['resources']['limits']['memory'],
-            })
-        return containers_spec
+                "labels": metadata.labels,
+                "annotations": metadata.annotations,
+                "image": image,
+                "min_cpu": _notebook['resources']['requests']['cpu'],
+                "max_cpu": _notebook['resources']['limits']['cpu'],
+                "min_memory": _notebook['resources']['requests']['memory'],
+                "max_memory": _notebook['resources']['limits']['memory'],
+                "min_gpu": _notebook['resources']['requests']['nvidia.com/gpu'],
+                "max_gpu": _notebook['resources']['limits']['nvidia.com/gpu'],
+                "create_date": metadata.create_date,
+                "volumes": volumes,
+                "conditions": conditions,
+            }
+        }
 
 
 def error_with_message(e: client.ApiException):
@@ -60,5 +86,8 @@ def error_with_message(e: client.ApiException):
     return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
 
 
-def response(model, shape_callable: callable):
+def response(model, shape_callable: callable = None):
+    if shape_callable is None:
+        return {"result": model}
     return shape_callable(model)
+
