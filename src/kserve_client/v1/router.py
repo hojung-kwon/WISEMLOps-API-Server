@@ -38,11 +38,11 @@ async def replace_inference_service(inference_service_info: models.InferenceServ
                                              protocol_version=inference_service_info.protocol_version)
 
 
-@router.delete("", response_model=APIResponseModel)
-async def delete_inference_service(inference_service_info: models.InferenceServiceInfo):
-    return service.delete_inference_service(inference_service_info.name, inference_service_info.namespace)
-
-
-@router.get("{name}", response_model=APIResponseModel)
+@router.delete("{namespace}/{name}", response_model=APIResponseModel)
 async def delete_inference_service(name: str, namespace: str):
     return service.delete_inference_service(name, namespace)
+
+
+@router.get("{namespace}/{name}", response_model=APIResponseModel)
+async def get_inference_service(name: str, namespace: str):
+    return service.get_inference_service(name, namespace)
