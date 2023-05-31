@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, List
 
-from mlflow import MlflowException
+from mlflow.exceptions import MlflowException
 
 from src.mlflow_client import _mlflow_client
 from src.mlflow_client.utils import response_success, response_error
@@ -62,7 +62,7 @@ def search_registered_models(filter_string: Optional[str] = None, max_results: i
     try:
         result = _mlflow_client.search_registered_models(filter_string=filter_string, max_results=max_results,
                                                          order_by=order_by, page_token=page_token)
-        result_list = result.to_list()
+        result_list = list(result)
     except MlflowException as me:
         return response_error(me)
     return response_success(result_list)

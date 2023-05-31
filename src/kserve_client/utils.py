@@ -1,7 +1,7 @@
 from typing import List
 
 from kserve import ApiException
-from mlflow import MlflowException
+from mlflow.exceptions import MlflowException
 
 from src.models import APIResponseModel
 

@@ -1,6 +1,6 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 
-from mlflow import MlflowException
+from mlflow.exceptions import MlflowException
 
 from src.mlflow_client import _mlflow_client
 from src.mlflow_client.utils import response_success, response_error
@@ -56,13 +56,12 @@ def restore_experiment(experiment_id: str) -> APIResponseModel:
     return response_success(result)
 
 
-def search_experiments(view_type: int = 1, max_results: Optional[int] = 1000, filter_string: Optional[str] = None,
-                       order_by: Optional[List[str]] = None, page_token: Optional[str] = None) -> APIResponseModel:
+def list_experiments(view_type: int = 1, max_results: Optional[int] = 1000,
+                     page_token: Optional[str] = None) -> APIResponseModel:
     try:
-        result = _mlflow_client.search_experiments(view_type=view_type, max_results=max_results,
-                                                   filter_string=filter_string, order_by=order_by,
-                                                   page_token=page_token)
-        result_list = result.to_list()
+        result = _mlflow_client.list_experiments(view_type=view_type, max_results=max_results,
+                                                 page_token=page_token)
+        result_list = list(result)
     except MlflowException as me:
         return response_error(me)
     return response_success(result_list)

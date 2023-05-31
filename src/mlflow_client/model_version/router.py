@@ -24,13 +24,8 @@ async def create_model_version(model_version_info: models.ModelVersionInfo):
 
 
 @router.get("", response_model=APIResponseModel)
-async def search_model_versions(max_results: Optional[int] = 1000, filter_string: Optional[str] = None,
-                                order_by: Optional[str] = None, page_token: Optional[str] = None):
-    order_by_list = None
-    if order_by:
-        order_by_list = order_by.split(",")
-    return service.search_model_versions(max_results=max_results, filter_string=filter_string, order_by=order_by_list,
-                                         page_token=page_token)
+async def search_model_versions(filter_string: Optional[str] = None):
+    return service.search_model_versions(filter_string=filter_string)
 
 
 @router.get("/{model_name}/latest", response_model=APIResponseModel)
