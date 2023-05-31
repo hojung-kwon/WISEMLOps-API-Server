@@ -1,4 +1,5 @@
-from kubernetes.client import CoreV1Api, AppsV1Api, NetworkingV1Api, ApiException
+from kubernetes.client import CoreV1Api, AppsV1Api, NetworkingV1Api
+from kubernetes.client.rest import ApiException
 
 from src.kubernetes_client.client import ResourceFactory as Factory
 from src.kubernetes_client.cluster.utils import Render, response, error_with_message, encode_to_base64

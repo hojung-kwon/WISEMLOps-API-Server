@@ -12,15 +12,18 @@ variables:
 
 before_script:
   - python3 -V
-  - pip install poetry
-  - poetry -V
-  - poetry config virtualenvs.create false
-  - poetry install --no-root
+  - pip install --upgrade pip
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+
 
 build-job:
   stage: build
   script:
-    - poetry install --no-root
+    - pip3 install build wheel
+    - python3 -m build . --wheel
+
 
 #unit-test-job:
 #  stage: test
@@ -31,8 +34,8 @@ build-job:
 lint-test-job:
   stage: test
   script:
-    - which flake8
-    - poetry run flake8
+    - pip3 install build flake8
+    - python3 -m flake8
 
 deploy-gitlab-job:
   image: docker:23.0.1
@@ -47,10 +50,11 @@ deploy-gitlab-job:
 
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
+    - BUILD_DATE=$(date +%Y%-m%d%-H%M)
   script:
     - pwd
-    - docker build -t $CI_REGISTRY_IMAGE/mlops-api:$CI_COMMIT_SHORT_SHA  .
-    - docker push $CI_REGISTRY_IMAGE/mlops-api:$CI_COMMIT_SHORT_SHA
+    - docker build -t $CI_REGISTRY_IMAGE/mlops-api:$BUILD_DATE-$CI_COMMIT_SHORT_SHA  .
+    - docker push $CI_REGISTRY_IMAGE/mlops-api:$BUILD_DATE-$CI_COMMIT_SHORT_SHA
 
   only:
     - main

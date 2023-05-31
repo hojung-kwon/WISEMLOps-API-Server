@@ -1,6 +1,6 @@
 import os
 
-from mlflow.tracking import MlflowClient
+from mlflow import MlflowClient
 
 from src import app_config
 

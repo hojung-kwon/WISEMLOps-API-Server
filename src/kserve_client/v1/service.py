@@ -1,5 +1,5 @@
 from kserve import ApiException
-from mlflow.exceptions import MlflowException
+from mlflow import MlflowException
 
 import src.kserve_client.v1.utils as utils
 from src.kserve_client import kserve_client

@@ -1,6 +1,6 @@
 import json
 
-from kubernetes import client
+from kubernetes.client.rest import ApiException
 
 from src.kubernetes_client.models import Metadata
 from src.models import APIResponseModel
@@ -213,7 +213,7 @@ def encode_to_base64(dict_data: dict):
     return {key: base64.b64encode(value.encode('utf-8')).decode('utf-8') for key, value in dict_data.items()}
 
 
-def error_with_message(e: client.ApiException):
+def error_with_message(e: ApiException):
     body = json.loads(e.body)
     return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
 

@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, List
 
-from mlflow.exceptions import MlflowException
+from mlflow import MlflowException
 
 from src.mlflow_client import _mlflow_client
 from src.mlflow_client.utils import response_success, response_error
@@ -69,7 +69,7 @@ def search_runs(experiment_ids: List[str], filter_string: str = '', run_view_typ
     try:
         result = _mlflow_client.search_runs(experiment_ids, filter_string=filter_string, run_view_type=run_view_type,
                                             max_results=max_results, order_by=order_by, page_token=page_token)
-        result_list = list(result)
+        result_list = result.to_list()
     except MlflowException as me:
         return response_error(me)
     return response_success(result_list)

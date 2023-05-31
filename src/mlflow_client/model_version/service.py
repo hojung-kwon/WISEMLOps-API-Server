@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any, List
 
-from mlflow.exceptions import MlflowException
+from mlflow import MlflowException
 
 from src.mlflow_client import _mlflow_client
 from src.mlflow_client.utils import response_success, response_error
@@ -75,10 +75,12 @@ def get_model_version_stages(name: str, version: str) -> APIResponseModel:
     return response_success(result)
 
 
-def search_model_versions(filter_string: Optional[str] = None) -> APIResponseModel:
+def search_model_versions(filter_string: Optional[str] = None, max_results: int = 10000,
+                          order_by: Optional[List[str]] = None, page_token: Optional[str] = None) -> APIResponseModel:
     try:
-        result = _mlflow_client.search_model_versions(filter_string=filter_string)
-        result_list = list(result)
+        result = _mlflow_client.search_model_versions(filter_string=filter_string, max_results=max_results,
+                                                      order_by=order_by, page_token=page_token)
+        result_list = result.to_list()
     except MlflowException as me:
         return response_error(me)
     return response_success(result_list)

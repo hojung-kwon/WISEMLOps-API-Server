@@ -1,6 +1,6 @@
 import json
 
-from kubernetes import client
+from kubernetes.client.rest import ApiException
 
 from src.kubernetes_client.models import Metadata
 from src.models import APIResponseModel
@@ -81,7 +81,7 @@ class Render:
         }
 
 
-def error_with_message(e: client.ApiException):
+def error_with_message(e: ApiException):
     body = json.loads(e.body)
     return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
 

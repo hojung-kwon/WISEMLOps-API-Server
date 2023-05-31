@@ -21,8 +21,13 @@ async def create_experiment(experiment_info: models.ExperimentInfo):
 
 
 @router.get("", response_model=APIResponseModel)
-async def list_experiments(view_type: int = 1, max_results: Optional[int] = 1000, page_token: Optional[str] = None):
-    result = service.list_experiments(view_type=view_type, max_results=max_results, page_token=page_token)
+async def search_experiments(view_type: int = 1, max_results: Optional[int] = 1000, filter_string: Optional[str] = None,
+                             order_by: Optional[str] = None, page_token: Optional[str] = None):
+    order_by_list = None
+    if order_by:
+        order_by_list = order_by.split(",")
+    result = service.search_experiments(view_type=view_type, max_results=max_results, filter_string=filter_string,
+                                        order_by=order_by_list, page_token=page_token)
 
     return result
 
