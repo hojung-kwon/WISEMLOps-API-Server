@@ -1,4 +1,5 @@
 import json
+import yaml
 
 from kubernetes.client.rest import ApiException
 
@@ -38,6 +39,7 @@ class Render:
     @staticmethod
     def to_notebook_status(item: dict):
         metadata = Render.metadata_of(item)
+        namespace = item['metadata']['namespace']
         containers = item['spec']['template']['spec']['containers']
         notebook = containers[0]
 
@@ -45,13 +47,31 @@ class Render:
             notebook['resources']['limits']['nvidia.com/gpu'] = 0
 
         return {
-            "status": item['status']['conditions'][0]['type'],
+            "status": item['status']['containerState'],
             "name": metadata.name,
             "created_at": metadata.create_date,
             "image": notebook['image'],
             "gpus": notebook['resources']['limits']['nvidia.com/gpu'],
             "cpus": notebook['resources']['limits']['cpu'],
             "memory": notebook['resources']['limits']['memory'],
+            "connect": get_connect_uri(namespace, metadata.name),
+            "delete": get_delete_uri(namespace, metadata.name),
+        }
+
+    @staticmethod
+    def to_notebook_details(model):
+        label_selector = f"notebook-name={model['metadata']['name']}"
+        namespace = model['metadata']['namespace']
+        name = model['metadata']['name']
+        return {
+            "result": {
+                "status": get_status_uri(namespace, label_selector),
+                "overview": get_overview_uri(namespace, name),
+                "logs": get_logs_uri(namespace, label_selector),
+                "connect": get_connect_uri(namespace, name),
+                "delete": get_delete_uri(namespace, name),
+                "yaml": to_yaml(model),
+            }
         }
 
     @staticmethod
@@ -81,6 +101,31 @@ class Render:
         }
 
 
+def get_connect_uri(namespace: str, name: str):
+    from src import app_config
+    return f"{app_config.NOTEBOOK_HOST}/notebook/{namespace}/{name}/lab"
+
+
+def get_delete_uri(namespace: str, name: str):
+    return f"/crds/namespaces/{namespace}/notebooks/{name}"
+
+
+def get_status_uri(namespace: str, label_selector: str):
+    return f"/cluster/namespaces/{namespace}/pods/?label_selector={label_selector}"
+
+
+def get_overview_uri(namespace: str, name: str):
+    return f"/crds/namespaces/{namespace}/notebooks/{name}/overview"
+
+
+def get_logs_uri(namespace: str, label_selector: str):
+    return f"/cluster/namespaces/{namespace}/logs/?label_selector={label_selector}"
+
+
+def to_yaml(notebook: dict):
+    return yaml.dump(notebook).split('\n')
+
+
 def error_with_message(e: ApiException):
     body = json.loads(e.body)
     return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
@@ -90,4 +135,5 @@ def response(model, shape_callable: callable = None):
     if shape_callable is None:
         return {"result": model}
     return shape_callable(model)
+
 

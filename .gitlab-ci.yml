@@ -50,7 +50,7 @@ deploy-gitlab-job:
 
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
-    - BUILD_DATE=$(date +%Y%-m%d%-H%M)
+    - BUILD_DATE=$(date +%Y-%m%d-%H%M)
   script:
     - pwd
     - docker build -t $CI_REGISTRY_IMAGE/mlops-api:$BUILD_DATE-$CI_COMMIT_SHORT_SHA  .

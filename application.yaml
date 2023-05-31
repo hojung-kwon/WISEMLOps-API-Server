@@ -1,6 +1,6 @@
 local:
   CLUSTER:
-    HOST: 'https://211.39.140.43:6443'
+    NOTEBOOK_HOST: 'https://wise-mlops.apps.wisenut.dp:32443'
     KUBE_CONFIG_PATH: 'D:\repoPy\MLOps-API\certs\kubeconfig'
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
@@ -13,7 +13,7 @@ local:
 
 container:
   CLUSTER:
-    HOST: 'https://211.39.140.43:6443'
+    NOTEBOOK_HOST: 'https://wise-mlops.apps.wisenut.dp:32443'
     KUBE_CONFIG_PATH: '/home/wisenut/app/certs/kubeconfig'
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'

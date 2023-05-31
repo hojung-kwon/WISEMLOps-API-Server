@@ -11,7 +11,7 @@ class Config:
             conf = yaml.safe_load(yaml_conf)[os.environ.get('APP_ENV', 'local')]
         self._config = conf
 
-        self.CLUSTER_HOST = self._config['CLUSTER']['HOST']
+        self.NOTEBOOK_HOST = self._config['CLUSTER']['NOTEBOOK_HOST']
         self.CLUSTER_KUBE_CONFIG_PATH = self._config['CLUSTER']['KUBE_CONFIG_PATH']
         self.CLUSTER_VOLUME_NFS_SERVER = self._config['CLUSTER']['VOLUME_NFS_SERVER']
         self.CLUSTER_VOLUME_NFS_PATH = self._config['CLUSTER']['VOLUME_NFS_PATH']
