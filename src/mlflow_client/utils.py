@@ -1,6 +1,6 @@
 from typing import List
 
-from mlflow import MlflowException
+from mlflow.exceptions import MlflowException
 
 from src.models import APIResponseModel
 

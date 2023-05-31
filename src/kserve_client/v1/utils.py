@@ -3,7 +3,7 @@ from typing import List, Optional
 from kserve import V1beta1InferenceServiceSpec, V1beta1PredictorSpec, V1beta1ModelSpec, V1beta1ModelFormat, \
     V1beta1InferenceService, constants
 from kubernetes import client
-from mlflow import MlflowException
+from mlflow.exceptions import MlflowException
 
 from src.mlflow_client import _mlflow_client
 

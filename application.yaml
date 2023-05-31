@@ -18,8 +18,8 @@ container:
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
   MINIO:
-    ENDPOINT: 'http://211.39.140.30:8082'
-    ACCESS_KEY: 'HoItKC9L7DkLjenn'
-    SECRET_KEY: 'hVQN7JZWrtSvdpfST5Jxv9uXPVmHtGjK'
+    ENDPOINT: 'http://minio-service.kubeflow.svc.cluster.local:9000'
+    ACCESS_KEY: 'minio'
+    SECRET_KEY: 'minio123'
   MLFLOW:
-    TRACKING_URI: 'http://localhost:5000'
+    TRACKING_URI: 'http://mlflow-server-service.mlflow-system.svc.cluster.local:5000'

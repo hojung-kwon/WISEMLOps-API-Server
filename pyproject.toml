@@ -7,7 +7,7 @@ readme = "README.md"
 #packages = [{include = "python_fastapi_template"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.9"
 fastapi = "^0.95.0"
 uvicorn = "^0.21.1"
 aiohttp = "^3.8.4"
