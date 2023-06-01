@@ -1,9 +1,8 @@
-import yaml
-from kubernetes import client
 from kubernetes.client import ApiClient, CustomObjectsApi
+from kubernetes.client.rest import ApiException
 
-from src.kubernetes_client.crds.utils import Render, response, error_with_message
 from src.kubernetes_client.client import ResourceFactory
+from src.kubernetes_client.crds.utils import Render, response, error_with_message
 from src.kubernetes_client.models import Notebook
 
 
@@ -21,7 +20,7 @@ class CrdService:
                 namespace=namespace
             )
             return response(result, Render.to_notebook_status_list)
-        except client.ApiException as e:
+        except ApiException as e:
             return error_with_message(e)
 
     def create_notebook(self, namespace: str, notebook: Notebook):
@@ -34,7 +33,7 @@ class CrdService:
                 body=body
             )
             return response(result, Render.to_no_content)
-        except client.ApiException as e:
+        except ApiException as e:
             return error_with_message(e)
 
     def delete_notebook(self, namespace: str, name: str):
@@ -46,28 +45,19 @@ class CrdService:
                 name=name
             )
             return response(result, Render.to_no_content)
-        except client.ApiException as e:
+        except ApiException as e:
             return error_with_message(e)
 
     def get_notebook(self, namespace: str, name: str):
         try:
-            notebook = self.crd_client.get_namespaced_custom_object(
+            result = self.crd_client.get_namespaced_custom_object(
                 group="kubeflow.org", version="v1alpha1",
                 plural="notebooks",
                 namespace=namespace,
                 name=name
             )
-            label_selector = f"notebook-name={notebook['metadata']['name']}"
-            result = [
-                {
-                    "status": f"/cluster/namespaces/{namespace}/pods/?label_selector={label_selector}",
-                    "overview": f"/crds/namespaces/{namespace}/notebooks/{name}/overview",
-                    "logs": f"/cluster/namespaces/{namespace}/logs/?label_selector={label_selector}",
-                    "yaml": yaml.dump(notebook).split('\n')
-                }
-            ]
-            return response(result)
-        except client.ApiException as e:
+            return response(result, Render.to_notebook_details)
+        except ApiException as e:
             return error_with_message(e)
 
     def get_notebook_overview(self, namespace: str, name: str):
@@ -79,6 +69,6 @@ class CrdService:
                 name=name
             )
             return response(result, Render.to_notebook_overview)
-        except client.ApiException as e:
+        except ApiException as e:
             return error_with_message(e)
 
