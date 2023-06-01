@@ -1,9 +1,4 @@
-import json
-
-from kubernetes.client.rest import ApiException
-
 from src.kubernetes_client.models import Metadata
-from src.models import APIResponseModel
 
 
 class Render:
@@ -207,16 +202,3 @@ class Render:
             "create_date": metadata.create_date,
         }
 
-
-def encode_to_base64(dict_data: dict):
-    import base64
-    return {key: base64.b64encode(value.encode('utf-8')).decode('utf-8') for key, value in dict_data.items()}
-
-
-def error_with_message(e: ApiException):
-    body = json.loads(e.body)
-    return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
-
-
-def response(model, shape_callable: callable = Render.to_name_list):
-    return shape_callable(model)

@@ -2,8 +2,9 @@ from kubernetes.client import ApiClient, CustomObjectsApi
 from kubernetes.client.rest import ApiException
 
 from src.kubernetes_client.client import ResourceFactory
-from src.kubernetes_client.crds.utils import Render, response, error_with_message
+from src.kubernetes_client.crds.utils import Render
 from src.kubernetes_client.models import Notebook
+from src.kubernetes_client.utils import response, error_with_message
 
 
 class CrdService:

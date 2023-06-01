@@ -6,13 +6,13 @@ from src.kubernetes_client.crds.service import CrdService
 load_cluster_config()
 
 cluster_service = ClusterService(
-    cluster_client=ClientFactory.create_core_client(),
-    deployment_client=ClientFactory.create_deployment_client(),
-    network_client=ClientFactory.create_networking_client()
+    cluster_client=ClientFactory.get_core_client(),
+    deployment_client=ClientFactory.get_deployment_client(),
+    network_client=ClientFactory.get_networking_client()
 )
 
 crd_service = CrdService(
-    api_client=ClientFactory.create_api_client(),
+    api_client=ClientFactory.get_api_client(),
     crd_client=ClientFactory.create_crd_client()
 )
 

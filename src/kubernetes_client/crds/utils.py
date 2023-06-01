@@ -1,10 +1,5 @@
-import json
-import yaml
-
-from kubernetes.client.rest import ApiException
-
 from src.kubernetes_client.models import Metadata
-from src.models import APIResponseModel
+from src.kubernetes_client.utils import to_yaml
 
 
 class Render:
@@ -46,8 +41,13 @@ class Render:
         if 'nvidia.com/gpu' not in notebook['resources']['limits']:
             notebook['resources']['limits']['nvidia.com/gpu'] = 0
 
+        if 'status' in item:
+            status = item['status']['containerState'],
+        else:
+            status = 'Pending'
+
         return {
-            "status": item['status']['containerState'],
+            "status": status,
             "name": metadata.name,
             "created_at": metadata.create_date,
             "image": notebook['image'],
@@ -103,7 +103,7 @@ class Render:
 
 def get_connect_uri(namespace: str, name: str):
     from src import app_config
-    return f"{app_config.NOTEBOOK_HOST}/notebook/{namespace}/{name}/lab"
+    return f"{app_config.CLUSTER_HOST}/notebook/{namespace}/{name}/lab"
 
 
 def get_delete_uri(namespace: str, name: str):
@@ -120,20 +120,5 @@ def get_overview_uri(namespace: str, name: str):
 
 def get_logs_uri(namespace: str, label_selector: str):
     return f"/cluster/namespaces/{namespace}/logs/?label_selector={label_selector}"
-
-
-def to_yaml(notebook: dict):
-    return yaml.dump(notebook).split('\n')
-
-
-def error_with_message(e: ApiException):
-    body = json.loads(e.body)
-    return APIResponseModel(code=e.status, result=body['message'], message=e.reason)
-
-
-def response(model, shape_callable: callable = None):
-    if shape_callable is None:
-        return {"result": model}
-    return shape_callable(model)
 
 

@@ -8,19 +8,19 @@ from src.kubernetes_client.models import Volume, VolumeClaim, ConfigMap, Secret,
 class ClientFactory:
 
     @staticmethod
-    def create_core_client():
+    def get_core_client():
         return client.CoreV1Api()
 
     @staticmethod
-    def create_deployment_client():
+    def get_deployment_client():
         return client.AppsV1Api()
 
     @staticmethod
-    def create_networking_client():
+    def get_networking_client():
         return client.NetworkingV1Api()
 
     @staticmethod
-    def create_api_client():
+    def get_api_client():
         return client.ApiClient()
 
     @staticmethod
