@@ -41,13 +41,8 @@ class Render:
         if 'nvidia.com/gpu' not in notebook['resources']['limits']:
             notebook['resources']['limits']['nvidia.com/gpu'] = 0
 
-        if 'status' in item:
-            status = item['status']['containerState'],
-        else:
-            status = 'Pending'
-
         return {
-            "status": status,
+            "status": item['status']['containerState'] if 'status' in item else {},
             "name": metadata.name,
             "created_at": metadata.create_date,
             "image": notebook['image'],
