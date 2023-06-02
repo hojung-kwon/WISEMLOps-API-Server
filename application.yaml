@@ -1,9 +1,13 @@
 local:
   CLUSTER:
-    NOTEBOOK_HOST: 'https://wise-mlops.apps.wisenut.dp:32443'
+    HOST: 'https://211.39.140.43:32443'
+    CA_CERT_PATH: 'D:\repoPy\MLOps-API\certs\k8s-ca.cert'
     KUBE_CONFIG_PATH: 'D:\repoPy\MLOps-API\certs\kubeconfig'
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
+  KUBEFLOW:
+    USERNAME: 'user@example.com'
+    PASSWORD: '12341234'
   MINIO:
     ENDPOINT: 'http://211.39.140.30:8082'
     ACCESS_KEY: 'HoItKC9L7DkLjenn'
@@ -13,7 +17,8 @@ local:
 
 container:
   CLUSTER:
-    NOTEBOOK_HOST: 'https://wise-mlops.apps.wisenut.dp:32443'
+    HOST: 'https://211.39.140.43:32443'
+    CA_CERT: '/home/wisenut/app/certs/k8s-ca.cert'
     KUBE_CONFIG_PATH: '/home/wisenut/app/certs/kubeconfig'
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
