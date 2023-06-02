@@ -18,10 +18,13 @@ local:
 container:
   CLUSTER:
     HOST: 'https://211.39.140.43:32443'
-    CA_CERT: '/home/wisenut/app/certs/k8s-ca.cert'
+    CA_CERT_PATH: '/home/wisenut/app/certs/k8s-ca.cert'
     KUBE_CONFIG_PATH: '/home/wisenut/app/certs/kubeconfig'
     VOLUME_NFS_SERVER: '211.39.140.43'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
+  KUBEFLOW:
+    USERNAME: 'user@example.com'
+    PASSWORD: '12341234'
   MINIO:
     ENDPOINT: 'http://minio-service.kubeflow.svc.cluster.local:9000'
     ACCESS_KEY: 'minio'
