@@ -12,7 +12,6 @@ class Config:
         self._config = conf
 
         self.CLUSTER_HOST = self._config['CLUSTER']['HOST']
-        self.CLUSTER_CA_CERT = self._config['CLUSTER']['CA_CERT_PATH']
         self.CLUSTER_KUBE_CONFIG_PATH = self._config['CLUSTER']['KUBE_CONFIG_PATH']
         self.CLUSTER_VOLUME_NFS_SERVER = self._config['CLUSTER']['VOLUME_NFS_SERVER']
         self.CLUSTER_VOLUME_NFS_PATH = self._config['CLUSTER']['VOLUME_NFS_PATH']
