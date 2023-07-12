@@ -1,8 +1,7 @@
 import json
 import yaml
 import base64
-import requests
-from src import app_config
+import time
 from src.models import APIResponseModel
 from kubernetes.client.rest import ApiException
 
@@ -24,13 +23,15 @@ def to_yaml(item: dict):
     return yaml.dump(item).split('\n')
 
 
-def get_session_cookie():
-    session = requests.Session()
-    to_redirect = session.get(app_config.CLUSTER_HOST, verify=False)
-
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    data = {"login": app_config.KUBEFLOW_USERNAME, "password": app_config.KUBEFLOW_PASSWORD}
-    session.post(to_redirect.url, headers=headers, data=data, verify=False)
-
-    session_cookie = session.cookies.get_dict()["authservice_session"]
-    return f"authservice_session={session_cookie}"
+def is_token_expired(token: str):
+    if token is None:
+        return True
+    payload = token.split(".")[1]
+    payload = payload + '=' * (4 - len(payload) % 4)
+    payload = base64.b64decode(payload).decode()
+    payload = json.loads(payload)
+    exp = payload['exp']
+    now = time.time()
+    if exp < now:
+        return True
+    return False

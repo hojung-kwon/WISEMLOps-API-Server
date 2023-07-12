@@ -6,7 +6,12 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-requires-python = "3.9"
+name = "MLOps-API"
+version = "1.0.0"
+description = "AI Platform Team's MLOps API"
+authors = [{name = "Seungwhan Yoo", email = "yswhan@wisenut.co.kr"}, {name = "Junhyeok Choi", email = "junwork@wisenut.co.kr"}]
+readme = "README.md"
+requires-python = "<3.10"
 
 [tool.flake8]
 ignore = "W"

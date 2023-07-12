@@ -20,8 +20,7 @@ class Config:
         self.MINIO_ACCESS_KEY = self._config['MINIO']['ACCESS_KEY']
         self.MINIO_SECRET_KEY = self._config['MINIO']['SECRET_KEY']
         self.MLFLOW_TRACKING_URI = self._config['MLFLOW']['TRACKING_URI']
-        self.KUBEFLOW_USERNAME = self._config['KUBEFLOW']['USERNAME']
-        self.KUBEFLOW_PASSWORD = self._config['KUBEFLOW']['PASSWORD']
+        self.KUBEFLOW_PIPELINES_ENDPOINT = self._config['KUBEFLOW']['PIPELINES']['ENDPOINT']
         pass
 
 

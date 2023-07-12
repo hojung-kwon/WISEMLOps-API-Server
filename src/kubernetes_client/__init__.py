@@ -2,6 +2,7 @@ from src.kubernetes_client.config import load_cluster_config
 from src.kubernetes_client.client import ClientFactory
 from src.kubernetes_client.cluster.service import ClusterService
 from src.kubernetes_client.crds.service import CrdService
+from src.kubernetes_client.kfp_client.service import KfpService
 
 load_cluster_config()
 
@@ -16,4 +17,7 @@ crd_service = CrdService(
     crd_client=ClientFactory.create_crd_client()
 )
 
+kfp_service = KfpService(
+    cluster_client=ClientFactory.get_core_client()
+)
 
