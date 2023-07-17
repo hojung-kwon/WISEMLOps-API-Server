@@ -16,6 +16,7 @@ from src.kubernetes_client.crds import router as crd_router
 from src.minio_client import router as minio_router
 from src.mlflow_client import router as mlflow_router
 from src.kserve_client import router as kserve_router
+from src.pipeline_generator import router as gen_pipeline_router
 from src.kubernetes_client.kfp_client import router as kfp_router
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
@@ -94,6 +95,7 @@ app.include_router(minio_router.router)
 app.include_router(mlflow_router.router)
 app.include_router(kserve_router.router)
 app.include_router(kfp_router.router)
+app.include_router(gen_pipeline_router.router)
 
 origins = [
     "*"

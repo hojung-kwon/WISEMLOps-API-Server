@@ -1,0 +1,51 @@
+from kfp import dsl
+from kubernetes import client
+
+
+{% if pipeline_description %}
+@dsl.pipeline(name="{{ pipeline_name }}", description="{{ pipeline_description | string_delimiter_safe }}")
+{% else %}
+@dsl.pipeline(name="{{ pipeline_name }}")
+{% endif %}
+def generated_pipeline(
+):
+    dsl.get_pipeline_conf().set_image_pull_secrets([client.V1LocalObjectReference(name="regcred")])
+    dsl.get_pipeline_conf().set_image_pull_policy('Always')
+
+{% for node in pipeline_info.nodes %}
+    {{ node.label }} = dsl.ContainerOp(
+        name='{{ node.label }}',
+        image='{{ node.data.attribute.image }}',
+    {% if node.data.attribute.args %}
+        arguments='{{ node.data.attribute.args }}'.split(),
+    {% endif %}
+    {% if node.data.attribute.command %}
+        command='{{ node.data.attribute.command }}'.split(),
+    {% else %}
+        command=["python", "main.py"],
+    {% endif %}
+    )
+    {% if env_variables %}
+        {% for env_key, env_value in env_variables.items() %}
+            {% for value_key, value in env_value.items() %}
+                {% if value_key == 'value' %}
+    {{ node.label }}.add_env_variable(client.V1EnvVar(name='{{ env_key }}', {{ value_key }}='{{ value }}'))
+                {% elif value_key == 'value_from' %}
+    {{ node.label }}.add_env_variable(client.V1EnvVar(name='{{ env_key }}', {{ value_key }}={{ value }}))
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+{% for edge in pipeline_info.edges %}
+    {{ edge.target }}.after({{ edge.source }})
+{% endfor %}
+
+
+if __name__ == "__main__":
+    import kfp.compiler as compiler
+{% if tar_file %}
+    compiler.Compiler().compile(generated_pipeline, '{{ tar_file }}')
+{% else %}
+    compiler.Compiler().compile(generated_pipeline, __file__ + '.tar.gz')
+{% endif %}
