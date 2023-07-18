@@ -17,7 +17,7 @@ class NodeDataAttribute(BaseModel):
 
 class NodeData(BaseModel):
     toolbar: NodeDataToolbar
-    attribute: NodeDataAttribute
+    attribute: Dict
 
 
 class NodePosition(BaseModel):
