@@ -13,7 +13,7 @@ def generated_pipeline(
     dsl.get_pipeline_conf().set_image_pull_policy('Always')
 
 {% for node in pipeline_info.nodes %}
-    {{ node.label }} = dsl.ContainerOp(
+    task_{{ node.id }} = dsl.ContainerOp(
         name='{{ node.label }}',
         image='{{ node.data.attribute.image }}',
     {% if node.data.attribute.args %}
@@ -38,7 +38,7 @@ def generated_pipeline(
     {% endif %}
 {% endfor %}
 {% for edge in pipeline_info.edges %}
-    {{ edge.target }}.after({{ edge.source }})
+    task_{{ edge.target }}.after(task_{{ edge.source }})
 {% endfor %}
 
 

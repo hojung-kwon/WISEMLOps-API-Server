@@ -4,11 +4,11 @@ import string
 
 from jinja2 import FileSystemLoader, Environment
 
-from src.pipeline_generator.utils import get_pipeline_generator_path
+from src.workflow_generator.utils import get_workflow_generator_path
 
 
-def get_template():
-    template_path = os.path.join(get_pipeline_generator_path(), "template")
+def get_template(template_type: str):
+    template_path = os.path.join(get_workflow_generator_path(), "template")
     template_loader = FileSystemLoader(template_path)
     template_env = Environment(loader=template_loader)
     # Add filter that produces a Python-safe variable name
@@ -19,7 +19,7 @@ def get_template():
     template_env.filters["param_val_to_python_var"] = (
         lambda p: "None" if p.value is None else (f'"{p.value}"' if p.input_type.base_type == "String" else p.value)
     )
-    template = template_env.get_template("ml_pipeline_template.jinja2", parent=template_path)
+    template = template_env.get_template(template_type + "_template.jinja2", parent=template_path)
 
     return template
 
@@ -45,10 +45,12 @@ def get_env_variables():
             'value': 'mlflow'
         },
         'AWS_ACCESS_KEY_ID': {
-            'value_from': "client.V1EnvVarSource(secret_key_ref=client.V1SecretKeySelector(name='minio30creds', key='AWS_ACCESS_KEY_ID'))"
+            'value_from': "client.V1EnvVarSource(secret_key_ref=client.V1SecretKeySelector(name='minio30creds', "
+                          "key='AWS_ACCESS_KEY_ID'))"
         },
         'AWS_SECRET_ACCESS_KEY': {
-            'value_from': "client.V1EnvVarSource(secret_key_ref=client.V1SecretKeySelector(name='minio30creds', key='AWS_SECRET_ACCESS_KEY'))"
+            'value_from': "client.V1EnvVarSource(secret_key_ref=client.V1SecretKeySelector(name='minio30creds', "
+                          "key='AWS_SECRET_ACCESS_KEY'))"
         },
     }
     return env_variables

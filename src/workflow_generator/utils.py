@@ -8,21 +8,21 @@ from src.models import APIResponseModel
 from jinja2.exceptions import TemplateError
 
 
-def get_pipeline_name(name: str):
+def get_workflow_name(name: str):
     if name is None or len(name.strip()) < 1:
-        return make_pipeline_name()
+        return make_workflow_name()
     return name
 
 
-def make_pipeline_name():
+def make_workflow_name():
     source = string.ascii_letters + string.digits
     result_str = ''.join((random.choice(source) for i in range(12)))
     return result_str
 
 
-def get_pipeline_generator_path():
-    pipeline_generator_path = os.path.join(os.getcwd(), "pipeline_generator")
-    return os.path.abspath(pipeline_generator_path)
+def get_workflow_generator_path():
+    workflow_generator_path = os.path.join(os.getcwd(), "workflow_generator")
+    return os.path.abspath(workflow_generator_path)
 
 
 def response_error(e: TemplateError) -> APIResponseModel:
