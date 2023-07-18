@@ -46,7 +46,6 @@ class PipelineGenService:
 
     def _get_rendered_airflow_dag(self, dag_info: DagInfo, pipeline_info: PipelineInfo):
         workflow = self.airflow_template.render(
-            env_variables=self.env_variables,
             dag_info=dag_info,
             pipeline_info=pipeline_info,
         )
@@ -59,8 +58,8 @@ class PipelineGenService:
                 os.makedirs(output_path)
             dag_file = os.path.join(output_path, f"{dag_info.dag_id}.py")
             dag = self._get_rendered_airflow_dag(dag_info, pipeline_info)
-            with open(dag_file, "w") as dsl_output:
-                dsl_output.write(dag)
+            with open(dag_file, "w") as dag_output:
+                dag_output.write(dag)
         except TemplateError as te:
             return response_error(te)
         return response_success(dag_info)

@@ -20,7 +20,7 @@ dag = DAG (
 {% for node in pipeline_info.nodes %}
 task_{{ node.id }} = PythonOperator(
     task_id='{{ node.data.attribute.task_id }}',
-    python_callable='{{ node.data.attribute.operator_type }}',
+    python_callable={{ node.data.attribute.operator_type }},
     op_kwargs={{ node.data.attribute }},
     dag=dag)
 {% endfor %}
