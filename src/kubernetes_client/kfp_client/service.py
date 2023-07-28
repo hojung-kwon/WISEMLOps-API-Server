@@ -40,6 +40,19 @@ class KfpService:
                                      namespace=self.namespace,
                                      existing_token=self.token)
 
+            config = kfp_server_api.configuration.Configuration()
+            config.host = app_config.KUBEFLOW_PIPELINES_ENDPOINT
+            config.api_key['authorization'] = self.token
+            config.api_key_prefix['authorization'] = 'Bearer'
+            api_client = kfp_server_api.api_client.ApiClient(config)
+
+            self._job_api = kfp_server_api.api.job_service_api.JobServiceApi(api_client)
+            self._run_api = kfp_server_api.api.run_service_api.RunServiceApi(api_client)
+            self._experiment_api = kfp_server_api.api.experiment_service_api.ExperimentServiceApi(api_client)
+            self._pipelines_api = kfp_server_api.api.pipeline_service_api.PipelineServiceApi(api_client)
+            self._upload_api = kfp_server_api.api.PipelineUploadServiceApi(api_client)
+            self._healthz_api = kfp_server_api.api.healthz_service_api.HealthzServiceApi(api_client)
+
     def get_kfp_healthz(self):
         try:
             self._connect_kfp_client()
@@ -125,10 +138,10 @@ class KfpService:
         except ApiException or kfp_server_api.ApiException as e:
             return error_with_message(e)
 
-    def delete_pipeline(self, pipeline_id: str):
+    def get_pipeline_template(self, pipeline_id: str):
         try:
             self._connect_kfp_client()
-            result = self.kfp_client.delete_pipeline(pipeline_id)
+            result = self._pipelines_api.get_template(id=pipeline_id)
             return response(result.to_dict(), Render.to_raw_content)
         except ApiException or kfp_server_api.ApiException as e:
             return error_with_message(e)
@@ -139,6 +152,22 @@ class KfpService:
             result = self.kfp_client.list_pipeline_versions(pipeline_id=pipeline_id, page_token=page_token,
                                                             page_size=page_size, sort_by=sort_by)
             return response(result.to_dict(), Render.to_raw_content)
+        except ApiException or kfp_server_api.ApiException as e:
+            return error_with_message(e)
+
+    def delete_pipeline(self, pipeline_id: str):
+        try:
+            self._connect_kfp_client()
+            result = self.kfp_client.delete_pipeline(pipeline_id)
+            return response(result.to_dict(), Render.to_raw_content)
+        except ApiException or kfp_server_api.ApiException as e:
+            return error_with_message(e)
+
+    def get_pipeline_id(self, name: Optional[str]):
+        try:
+            self._connect_kfp_client()
+            result = self.kfp_client.get_pipeline_id(name)
+            return response(result, Render.to_raw_content)
         except ApiException or kfp_server_api.ApiException as e:
             return error_with_message(e)
 
@@ -155,11 +184,27 @@ class KfpService:
         except ApiException or kfp_server_api.ApiException as e:
             return error_with_message(e)
 
-    def get_pipeline_id(self, name: Optional[str]):
+    def get_pipeline_version(self, version_id: str):
         try:
             self._connect_kfp_client()
-            result = self.kfp_client.get_pipeline_id(name)
-            return response(result, Render.to_raw_content)
+            result = self._pipelines_api.get_pipeline_version(version_id=version_id)
+            return response(result.to_dict(), Render.to_raw_content)
+        except ApiException or kfp_server_api.ApiException as e:
+            return error_with_message(e)
+
+    def get_pipeline_version_template(self, pipeline_id: str):
+        try:
+            self._connect_kfp_client()
+            result = self._pipelines_api.get_pipeline_version_template(version_id=pipeline_id)
+            return response(result.to_dict(), Render.to_raw_content)
+        except ApiException or kfp_server_api.ApiException as e:
+            return error_with_message(e)
+
+    def delete_pipeline_version(self, version_id: str):
+        try:
+            self._connect_kfp_client()
+            result = self.kfp_client.delete_pipeline_version(version_id)
+            return response(result.to_dict(), Render.to_raw_content)
         except ApiException or kfp_server_api.ApiException as e:
             return error_with_message(e)
 

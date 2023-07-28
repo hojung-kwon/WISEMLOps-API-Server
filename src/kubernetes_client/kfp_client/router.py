@@ -57,19 +57,14 @@ async def upload_pipeline(pipeline: Pipeline):
     return kfp_service.upload_pipeline(pipeline)
 
 
-@router.post("/pipelines/versions", tags=["kfp"], response_model=APIResponseModel)
-async def upload_pipeline_version(pipeline_version: PipelineVersion):
-    return kfp_service.upload_pipeline_version(pipeline_version)
-
-
 @router.get("/pipelines/{pipeline_id}", tags=["kfp"], response_model=APIResponseModel)
 async def get_pipeline(pipeline_id: str):
     return kfp_service.get_pipeline(pipeline_id)
 
 
-@router.delete("/pipelines/{pipeline_id}", tags=["kfp"], response_model=APIResponseModel)
-async def delete_pipeline(pipeline_id: str):
-    return kfp_service.delete_pipeline(pipeline_id)
+@router.get("/pipelines/{pipeline_id}/template", tags=["kfp"], response_model=APIResponseModel)
+async def get_pipeline_template(pipeline_id: str):
+    return kfp_service.get_pipeline_template(pipeline_id)
 
 
 @router.get("/pipelines/{pipeline_id}/versions", tags=["kfp"], response_model=APIResponseModel)
@@ -77,9 +72,34 @@ async def list_pipeline_versions(pipeline_id: str):
     return kfp_service.list_pipeline_versions(pipeline_id)
 
 
+@router.delete("/pipelines/{pipeline_id}", tags=["kfp"], response_model=APIResponseModel)
+async def delete_pipeline(pipeline_id: str):
+    return kfp_service.delete_pipeline(pipeline_id)
+
+
 @router.get("/pipelines/{pipeline_name}/id", tags=["kfp"], response_model=APIResponseModel)
 async def get_pipeline_id(pipeline_name: str):
     return kfp_service.get_pipeline_id(pipeline_name)
+
+
+@router.post("/pipelines/versions", tags=["kfp"], response_model=APIResponseModel)
+async def upload_pipeline_version(pipeline_version: PipelineVersion):
+    return kfp_service.upload_pipeline_version(pipeline_version)
+
+
+@router.get("/pipelines/versions/{version_id}", tags=["kfp"], response_model=APIResponseModel)
+async def get_pipeline_version(version_id: str):
+    return kfp_service.get_pipeline_version(version_id)
+
+
+@router.get("/pipelines/versions/{version_id}/template", tags=["kfp"], response_model=APIResponseModel)
+async def get_pipeline_version_template(version_id: str):
+    return kfp_service.get_pipeline_version_template(version_id)
+
+
+@router.delete("/pipelines/versions/{version_id}", tags=["kfp"], response_model=APIResponseModel)
+async def delete_pipeline_version(version_id: str):
+    return kfp_service.delete_pipeline_version(version_id)
 
 
 @router.get("/runs", tags=["kfp"], response_model=APIResponseModel)
