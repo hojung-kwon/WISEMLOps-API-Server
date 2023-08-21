@@ -1,0 +1,29 @@
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from datetime import datetime
+import pendulum
+from plugins import restOperator, gcsOperator, mappingOperator, jsonOperator, csvOperator, filterOperator,videoSplitOperator, minioOperator, elasticsearchOperator, objectExtractOperator
+true = True
+false = False
+
+dag = DAG (
+    dag_id = "{{ dag_info.dag_id }}",
+    description = "{{ dag_info.description }}",
+    schedule = "{{ dag_info.schedule }}",
+{% if dag_info.start_date %}
+    start_date = pendulum.datetime({{ dag_info.start_date.year }}, {{ dag_info.start_date.month }}, {{ dag_info.start_date.day }}, tz='UTC'),
+{% endif %}
+    tags = {{ dag_info.tags }}
+    catchup = False
+)
+
+{% for node in pipeline_info.nodes %}
+task_{{ node.id }} = PythonOperator(
+    task_id='{{ node.data.attribute.task_id }}',
+    python_callable={{ node.data.attribute.operator_type }},
+    op_kwargs={{ node.data.attribute }},
+    dag=dag)
+{% endfor %}
+{% for edge in pipeline_info.edges %}
+task_{{ edge.target }}.set_upstream(task_{{ edge.source }})
+{% endfor %}
