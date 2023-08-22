@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.models import APIResponseModel
 from . import service, models, schemas
-from .database_config import SessionLocal, engine
+from src.workflow_pipeline import SessionLocal, engine
 from .utils import response_success, response_error
 
 router = APIRouter(

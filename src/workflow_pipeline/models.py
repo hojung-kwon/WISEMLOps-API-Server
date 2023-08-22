@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, DateTime
 
-from .database_config import Base
+from src.workflow_pipeline import Base
 
 
 class Pipeline(Base):

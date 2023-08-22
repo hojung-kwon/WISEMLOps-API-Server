@@ -13,6 +13,8 @@ local:
     SECRET_KEY: 'hVQN7JZWrtSvdpfST5Jxv9uXPVmHtGjK'
   MLFLOW:
     TRACKING_URI: 'http://localhost:5000'
+  DATABASE:
+    SQLALCHEMY_DATABASE_URL: "sqlite:///./sql_app.db"
 
 container:
   CLUSTER:
@@ -29,3 +31,5 @@ container:
     SECRET_KEY: 'minio123'
   MLFLOW:
     TRACKING_URI: 'http://mlflow-server-service.mlflow-system.svc.cluster.local:5000'
+  DATABASE:
+    SQLALCHEMY_DATABASE_URL: "sqlite:///./sql_app.db"
