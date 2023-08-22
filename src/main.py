@@ -18,6 +18,7 @@ from src.mlflow_client import router as mlflow_router
 from src.kserve_client import router as kserve_router
 from src.workflow_generator import router as gen_pipeline_router
 from src.kubernetes_client.kfp_client import router as kfp_router
+from src.workflow_pipeline import router as pipeline_router
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -96,6 +97,7 @@ app.include_router(mlflow_router.router)
 app.include_router(kserve_router.router)
 app.include_router(kfp_router.router)
 app.include_router(gen_pipeline_router.router)
+app.include_router(pipeline_router.router)
 
 origins = [
     "*"
