@@ -33,8 +33,6 @@ def create_pipeline(pipeline: schemas.Pipeline, db: Session = Depends(get_db)):
     except Exception as e:
         return response_error(e)
 
-    return service.create_pipeline(db=db, pipeline=pipeline)
-
 @router.get("", response_model=APIResponseModel)
 def get_pipelines(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     try:
