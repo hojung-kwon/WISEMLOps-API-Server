@@ -4,6 +4,7 @@ from fastapi import HTTPException
 
 from src.models import APIResponseModel
 
+
 def response_error(e: HTTPException) -> APIResponseModel:
     code = int(str(e.get_http_status_code()) + '000')
     return APIResponseModel(code=code, message=e.error_code, result=e.message)

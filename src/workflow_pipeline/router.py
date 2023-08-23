@@ -4,8 +4,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from src.models import APIResponseModel
-from . import service, models, schemas
 from src.workflow_pipeline import SessionLocal, engine
+from . import service, models, schemas
 from .utils import response_success, response_error
 
 router = APIRouter(
@@ -17,6 +17,7 @@ router = APIRouter(
 
 models.Base.metadata.create_all(bind=engine)
 
+
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -24,6 +25,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @router.post("", response_model=APIResponseModel)
 def create_pipeline(pipeline: schemas.Pipeline, db: Session = Depends(get_db)):
@@ -33,6 +35,7 @@ def create_pipeline(pipeline: schemas.Pipeline, db: Session = Depends(get_db)):
     except Exception as e:
         return response_error(e)
 
+
 @router.get("", response_model=APIResponseModel)
 def get_pipelines(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     try:
@@ -40,6 +43,7 @@ def get_pipelines(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
         return response_success(pipelines)
     except Exception as e:
         return response_error(e)
+
 
 @router.get("{pipeline_name}", response_model=APIResponseModel)
 def get_pipeline(pipeline_name: str, db: Session = Depends(get_db)):
