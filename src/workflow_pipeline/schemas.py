@@ -1,14 +1,16 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, List
 
 from pydantic import BaseModel
 
 
 class Pipeline(BaseModel):
+    pipeline_id: str
     pipeline_name: str
-    nodes: str
-    edges: str
-    position: str
-    zoom: str
-    created_at: Optional[datetime] = datetime.now()
-    updated_at: Optional[datetime] = datetime.now()
+    pipeline_description: Optional[str] = None
+    nodes: List[Dict]
+    edges: List[Dict]
+    position: List[float]
+    zoom: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None

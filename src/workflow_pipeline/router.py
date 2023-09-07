@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi.responses import JSONResponse
@@ -37,18 +39,19 @@ def create_pipeline(pipeline: schemas.Pipeline, db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=APIResponseModel)
-def get_pipelines(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_pipelines(pipeline_name: Optional[str] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     try:
-        pipelines = service.get_pipelines(db, skip=skip, limit=limit)
+        pipelines = service.get_pipelines(db, pipeline_name=pipeline_name, skip=skip, limit=limit)
         return response_success(pipelines)
     except Exception as e:
         return response_error(e)
 
 
-@router.get("{pipeline_name}", response_model=APIResponseModel)
-def get_pipeline(pipeline_name: str, db: Session = Depends(get_db)):
+
+@router.get("/{pipeline_id}", response_model=APIResponseModel)
+def get_pipeline(pipeline_id: str, db: Session = Depends(get_db)):
     try:
-        pipelines = service.get_pipeline_by_name(db, pipeline_name)
+        pipelines = service.get_pipeline_by_id(db, pipeline_id)
         return response_success(pipelines)
     except Exception as e:
         return response_error(e)
