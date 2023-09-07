@@ -21,8 +21,7 @@ def make_workflow_name():
 
 
 def get_workflow_generator_path():
-    workflow_generator_path = os.path.join(os.getcwd(), "workflow_generator")
-    return os.path.abspath(workflow_generator_path)
+    return os.path.dirname(__file__)
 
 
 def response_error(e: TemplateError) -> APIResponseModel:
