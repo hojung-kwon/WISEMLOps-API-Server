@@ -47,7 +47,6 @@ def get_pipelines(pipeline_name: Optional[str] = None, skip: int = 0, limit: int
         return response_error(e)
 
 
-
 @router.get("/{pipeline_id}", response_model=APIResponseModel)
 def get_pipeline(pipeline_id: str, db: Session = Depends(get_db)):
     try:
