@@ -3,9 +3,8 @@ from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.minio_module import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY
+from src.minio_module import service
 from src.minio_module.schemas import BucketInfo, ObjectInfo
-from src.minio_module.service import MinIOService
 from src.models import APIResponseModel
 from src.response import Response
 
@@ -14,8 +13,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
     default_response_class=JSONResponse,
 )
-
-service = MinIOService(endpoint=MINIO_ENDPOINT, access_key=MINIO_ACCESS_KEY, secret_key=MINIO_SECRET_KEY)
 
 
 @router.get("/bucket", tags=["bucket"], response_model=APIResponseModel)
