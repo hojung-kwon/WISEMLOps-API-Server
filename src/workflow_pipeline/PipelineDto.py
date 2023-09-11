@@ -1,11 +1,9 @@
-from datetime import datetime
 from typing import Optional, Dict, List
 
 from pydantic import BaseModel
 
 
-class Pipeline(BaseModel):
-    pipeline_id: str
+class PipelineDto(BaseModel):
     pipeline_name: str
     pipeline_description: Optional[str] = None
     version_name: Optional[str] = None
@@ -14,5 +12,3 @@ class Pipeline(BaseModel):
     edges: List[Dict]
     position: List[float]
     zoom: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None

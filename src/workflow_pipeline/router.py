@@ -6,9 +6,10 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from src.models import APIResponseModel
-from src.workflow_pipeline import SessionLocal, engine
-from . import service, models, schemas
-from .utils import response_success, response_error
+from src.workflow_pipeline import SessionLocal, engine, workflow_pipeline_service
+from . import models
+from .PipelineDto import PipelineDto
+from ..response import Response
 
 router = APIRouter(
     prefix="/pipeline",
@@ -30,27 +31,18 @@ def get_db():
 
 
 @router.post("", response_model=APIResponseModel)
-def create_pipeline(pipeline: schemas.Pipeline, db: Session = Depends(get_db)):
-    try:
-        result = service.create_pipeline(db=db, pipeline=pipeline)
-        return response_success(result)
-    except Exception as e:
-        return response_error(e)
+def create_pipeline(pipeline: PipelineDto, db: Session = Depends(get_db)):
+    result = workflow_pipeline_service.create_pipeline(db=db, pipeline=pipeline)
+    return Response.from_result(result)
 
 
 @router.get("", response_model=APIResponseModel)
 def get_pipelines(pipeline_name: Optional[str] = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    try:
-        pipelines = service.get_pipelines(db, pipeline_name=pipeline_name, skip=skip, limit=limit)
-        return response_success(pipelines)
-    except Exception as e:
-        return response_error(e)
+    pipelines = workflow_pipeline_service.get_pipelines(db, pipeline_name=pipeline_name, skip=skip, limit=limit)
+    return Response.from_result(pipelines)
 
 
 @router.get("/{pipeline_id}", response_model=APIResponseModel)
 def get_pipeline(pipeline_id: str, db: Session = Depends(get_db)):
-    try:
-        pipelines = service.get_pipeline_by_id(db, pipeline_id)
-        return response_success(pipelines)
-    except Exception as e:
-        return response_error(e)
+    pipelines = workflow_pipeline_service.get_pipeline_by_id(db, pipeline_id)
+    return Response.from_result(pipelines)
