@@ -1,9 +1,14 @@
-from typing import List
+from typing import List, Any
 
-from src.models import APIResponseModel
+from pydantic import BaseModel
 
 
-class Response(APIResponseModel):
+class Response(BaseModel):
+    """기본 API 응답 포맷 by AI플랫폼 Restful API 디자인 가이드"""
+    code: int = 200000
+    message: str = "API response success"
+    result: Any
+
     @classmethod
     def from_result(cls, result):
         if result is None:
