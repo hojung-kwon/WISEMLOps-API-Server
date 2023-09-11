@@ -1,9 +1,10 @@
-import json
-import yaml
 import base64
-import time
-from src.models import APIResponseModel
+import json
+
+import yaml
 from kubernetes.client.rest import ApiException
+
+from src.models import APIResponseModel
 
 
 def error_with_message(e: ApiException):
@@ -21,17 +22,3 @@ def encode_to_base64(dict_data: dict):
 
 def to_yaml(item: dict):
     return yaml.dump(item).split('\n')
-
-
-def is_token_expired(token: str):
-    if token is None:
-        return True
-    payload = token.split(".")[1]
-    payload = payload + '=' * (4 - len(payload) % 4)
-    payload = base64.b64decode(payload).decode()
-    payload = json.loads(payload)
-    exp = payload['exp']
-    now = time.time()
-    if exp < now:
-        return True
-    return False

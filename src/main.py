@@ -11,10 +11,11 @@ from starlette.responses import JSONResponse
 from uvicorn import Config, Server
 
 from src.exceptions import CustomHTTPError
+from src.kfp_module.exceptions import KFPException
 from src.kserve_client import router as kserve_router
 from src.kubernetes_client.cluster import router as cluster_router
 from src.kubernetes_client.crds import router as crd_router
-from src.kubernetes_client.kfp_client import router as kfp_router
+from src.kfp_module import router as kfp_router
 from src.minio_module import router as minio_router
 from src.mlflow_client import router as mlflow_router
 from src.version import get_version_info, write_version_py
@@ -154,6 +155,12 @@ async def workflow_pipeline_exception_handler(request: Request, exc: WorkflowGen
 async def minio_exception_handler(request: Request, exc: MinioException):
     return JSONResponse(status_code=200,
                         content={"code": 400000, "message": "minioException", "result": exc.args})
+
+
+@app.exception_handler(KFPException)
+async def kfp_exception_handler(request: Request, exc: KFPException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
 @app.get("/")
