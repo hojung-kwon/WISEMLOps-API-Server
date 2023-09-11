@@ -3,7 +3,9 @@ import uuid
 from sqlalchemy import Column, String, DateTime, Integer, JSON
 from sqlalchemy.orm import declarative_base
 
+
 Base = declarative_base()
+
 
 class Pipeline(Base):
     __tablename__ = "pipeline"

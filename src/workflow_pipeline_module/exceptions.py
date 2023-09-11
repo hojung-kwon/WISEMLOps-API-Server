@@ -18,7 +18,9 @@ class WorkflowPipelineException(Exception):
         }
         return json.dumps(exception_data, indent=4, ensure_ascii=False)
 
+
 MODULE_CODE = 700
+
 
 class PipelineNotFoundError(WorkflowPipelineException):
     """파이프라인 미존재"""
