@@ -3,9 +3,9 @@ from typing import Dict, Optional
 
 from jinja2 import Template, TemplateError
 
-from src.workflow_generator.models import PipelineInfo, DagInfo
-from src.workflow_generator.utils import get_workflow_name, response_error, response_success, \
-    get_workflow_generator_path
+from src.workflow_generator.exceptions import WorkflowTemplateError
+from src.workflow_generator.schemas import PipelineInfo, DagInfo
+from src.workflow_generator.utils import get_workflow_name, get_workflow_generator_path
 
 
 class PipelineGenService:
@@ -27,9 +27,9 @@ class PipelineGenService:
     def _write_kfp_pipeline_dsl_file(self, pipeline_info: PipelineInfo, output_path: Optional[str] = None):
         pipeline_info.pipeline_name = get_workflow_name(pipeline_info.pipeline_name)
         dsl_file = os.path.join(output_path, f"{pipeline_info.pipeline_name}.py")
-        tar_file = os.path.join(output_path, f"{pipeline_info.pipeline_name}.tar.gz")
+        tar_file = os.path.abspath(os.path.join(output_path, f"{pipeline_info.pipeline_name}.tar.gz"))
         pipeline_dsl = self._get_rendered_kfp_pipeline_dsl(pipeline_info, tar_file)
-        with open(dsl_file, "w") as dsl_output:
+        with open(dsl_file, "w", encoding='utf-8') as dsl_output:
             dsl_output.write(pipeline_dsl)
         return dsl_file
 
@@ -40,9 +40,9 @@ class PipelineGenService:
                 os.makedirs(output_path)
             dsl_file = self._write_kfp_pipeline_dsl_file(pipeline_info, output_path=output_path)
             os.system("python " + dsl_file)
+            return pipeline_info
         except TemplateError as te:
-            return response_error(te)
-        return response_success(pipeline_info)
+            raise WorkflowTemplateError(te)
 
     def _get_rendered_airflow_dag(self, dag_info: DagInfo, pipeline_info: PipelineInfo):
         workflow = self.airflow_template.render(
@@ -60,6 +60,6 @@ class PipelineGenService:
             dag = self._get_rendered_airflow_dag(dag_info, pipeline_info)
             with open(dag_file, "w") as dag_output:
                 dag_output.write(dag)
+            return dag_info
         except TemplateError as te:
-            return response_error(te)
-        return response_success(dag_info)
+            raise WorkflowTemplateError(te)

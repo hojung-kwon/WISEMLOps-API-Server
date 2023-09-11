@@ -1,11 +1,6 @@
 import os
-import string
 import random
-
-from typing import List
-
-from src.models import APIResponseModel
-from jinja2.exceptions import TemplateError
+import string
 
 
 def get_workflow_name(name: str):
@@ -22,16 +17,3 @@ def make_workflow_name():
 
 def get_workflow_generator_path():
     return os.path.dirname(__file__)
-
-
-def response_error(e: TemplateError) -> APIResponseModel:
-    code = 400000
-    return APIResponseModel(code=code, message=e.message, result=e.args)
-
-
-def response_success(result):
-    if result is None:
-        return APIResponseModel(result=['no content'])
-    elif isinstance(result, List):
-        return APIResponseModel(result=result)
-    return APIResponseModel(result=[result])
