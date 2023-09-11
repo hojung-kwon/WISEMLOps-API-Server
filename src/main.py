@@ -141,7 +141,7 @@ async def notfound_handler(request: Request, exc: CustomHTTPError):
 @app.exception_handler(WorkflowGeneratorException)
 async def workflow_generator_exception_handler(request: Request, exc: WorkflowGeneratorException):
     return JSONResponse(status_code=200,
-                        content={"code": exc.code, "message": exc.message, "result": exc.result})\
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
 @app.exception_handler(WorkflowPipelineException)
