@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from loguru import logger
+from minio.error import MinioException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
@@ -14,7 +15,7 @@ from src.kserve_client import router as kserve_router
 from src.kubernetes_client.cluster import router as cluster_router
 from src.kubernetes_client.crds import router as crd_router
 from src.kubernetes_client.kfp_client import router as kfp_router
-from src.minio_client import router as minio_router
+from src.minio_module import router as minio_router
 from src.mlflow_client import router as mlflow_router
 from src.version import get_version_info, write_version_py
 from src.workflow_generator import router as gen_pipeline_router
@@ -140,6 +141,12 @@ async def notfound_handler(request: Request, exc: CustomHTTPError):
 async def workflow_generator_exception_handler(request: Request, exc: WorkflowGeneratorException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(MinioException)
+async def minio_exception_handler(request: Request, exc: MinioException):
+    return JSONResponse(status_code=200,
+                        content={"code": 400000, "message": "minioException", "result": exc.args})
 
 
 @app.get("/")
