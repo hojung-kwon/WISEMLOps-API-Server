@@ -4,8 +4,6 @@ from typing import Union
 from kfp_server_api import ApiException as KFPApiException
 from kubernetes.client import ApiException as KubernetesApiException
 
-from src.kfp_module import MODULE_CODE
-
 
 class KFPException(Exception):
     def __init__(self, code: int, message: str, result):
@@ -22,9 +20,12 @@ class KFPException(Exception):
         return json.dumps(exception_data, indent=4, ensure_ascii=False)
 
 
+MODULE_CODE = 701
+
+
 class KFPApiError(KFPException):
     def __init__(self, e: Union[KFPApiException, KubernetesApiException]):
         body = json.loads(e.body)
         self.code = int(f"{MODULE_CODE}{e.status}")
-        self.message = body['message']
-        self.result = e.reason
+        self.message = e.reason
+        self.result = body['message']
