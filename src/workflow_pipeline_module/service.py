@@ -3,9 +3,9 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from src.workflow_pipeline import models, schemas
-from src.workflow_pipeline.PipelineDto import PipelineDto
-from src.workflow_pipeline.exceptions import PipelineNotFoundError, PipelineAlreadyExistsError, PipelineCreateError
+from src.workflow_pipeline_module import models
+from src.workflow_pipeline_module.exceptions import PipelineAlreadyExistsError, PipelineCreateError
+from src.workflow_pipeline_module.pipeline_dto import PipelineDto
 
 
 class WorkflowPipelineService:
@@ -33,11 +33,13 @@ class WorkflowPipelineService:
 
         try:
             # TODO : pipeline upload 후, pipeline_id 얻고 넣기
+            import uuid
+            pipeline_id = uuid.uuid4()
 
             created_at = datetime.now()
             updated_at = datetime.now()
 
-            db_pipeline = models.Pipeline(pipeline_id=pipeline.pipeline_id, pipeline_name=pipeline.pipeline_name,
+            db_pipeline = models.Pipeline(pipeline_id=pipeline_id, pipeline_name=pipeline.pipeline_name,
                                           pipeline_description=pipeline.pipeline_description, nodes=pipeline.nodes,
                                           edges=pipeline.edges, position=pipeline.position, zoom=pipeline.zoom,
                                           created_at=created_at, updated_at=updated_at)

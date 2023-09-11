@@ -20,7 +20,8 @@ from src.mlflow_client import router as mlflow_router
 from src.version import get_version_info, write_version_py
 from src.workflow_generator import router as gen_pipeline_router
 from src.workflow_generator.exceptions import WorkflowGeneratorException
-from src.workflow_pipeline import router as pipeline_router
+from src.workflow_pipeline_module import router as pipeline_router
+from src.workflow_pipeline_module.exceptions import WorkflowPipelineException
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -138,6 +139,12 @@ async def notfound_handler(request: Request, exc: CustomHTTPError):
 
 
 @app.exception_handler(WorkflowGeneratorException)
+async def workflow_generator_exception_handler(request: Request, exc: WorkflowGeneratorException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})\
+
+
+@app.exception_handler(WorkflowPipelineException)
 async def workflow_generator_exception_handler(request: Request, exc: WorkflowGeneratorException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})

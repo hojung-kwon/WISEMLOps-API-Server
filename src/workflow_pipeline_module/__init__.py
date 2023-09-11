@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src import app_config
-from src.workflow_pipeline.service import WorkflowPipelineService
+from src.workflow_pipeline_module.service import WorkflowPipelineService
 
 SQLALCHEMY_DATABASE_URL = app_config.SQLALCHEMY_DATABASE_URL
 

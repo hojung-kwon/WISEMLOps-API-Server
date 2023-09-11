@@ -2,7 +2,7 @@ import json
 from starlette import status
 
 
-class WorkflowPipelineServiceError(Exception):
+class WorkflowPipelineException(Exception):
     """파이프라인 생성 서비스에서 발생할 수 있는 예외처리 포맷"""
 
     def __init__(self, code: int, message: str, result):
@@ -18,30 +18,30 @@ class WorkflowPipelineServiceError(Exception):
         }
         return json.dumps(exception_data, indent=4, ensure_ascii=False)
 
-SERVICE_CODE = "PIPELINE"
+MODULE_CODE = 700
 
-class PipelineNotFoundError(WorkflowPipelineServiceError):
+class PipelineNotFoundError(WorkflowPipelineException):
     """파이프라인 미존재"""
 
     def __init__(self, pipeline):
-        self.code = int(f"{SERVICE_CODE}{status.HTTP_404_NOT_FOUND}")
+        self.code = int(f"{MODULE_CODE}{status.HTTP_404_NOT_FOUND}")
         self.message = "Pipeline Not Found"
         self.result = {"current_pipeline": pipeline}
 
 
-class PipelineAlreadyExistsError(WorkflowPipelineServiceError):
+class PipelineAlreadyExistsError(WorkflowPipelineException):
     """파이프라인 미존재"""
 
     def __init__(self, pipeline):
-        self.code = int(f"{SERVICE_CODE}{status.HTTP_409_CONFLICT}")
+        self.code = int(f"{MODULE_CODE}{status.HTTP_409_CONFLICT}")
         self.message = "Pipeline already exists"
         self.result = {"current_pipeline": pipeline}
 
 
-class PipelineCreateError(WorkflowPipelineServiceError):
+class PipelineCreateError(WorkflowPipelineException):
     """파이프라인 저장 에러"""
 
     def __init__(self, pipeline, message):
-        self.code = int(f"{SERVICE_CODE}{status.HTTP_500_INTERNAL_SERVER_ERROR}")
+        self.code = int(f"{MODULE_CODE}{status.HTTP_500_INTERNAL_SERVER_ERROR}")
         self.message = f"CreatePipeline failed : {message}"
         self.result = {"current_pipeline": pipeline}

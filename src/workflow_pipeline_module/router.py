@@ -6,9 +6,9 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from src.models import APIResponseModel
-from src.workflow_pipeline import SessionLocal, engine, workflow_pipeline_service
+from src.workflow_pipeline_module import SessionLocal, engine, workflow_pipeline_service
 from . import models
-from .PipelineDto import PipelineDto
+from .pipeline_dto import PipelineDto
 from ..response import Response
 
 router = APIRouter(
