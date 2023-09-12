@@ -100,7 +100,7 @@ class ModelVersionService:
                                        archive_existing_versions: bool = False):
         try:
             result = self.get_mlflow_client().transition_model_version_stage(name, version, stage,
-                                                                             archive_existing_versions=archive_existing_versions)
+                                                                             archive_existing_versions)
             return result
         except MlflowException as e:
             raise MlflowApiError(e)
