@@ -4,7 +4,7 @@ import string
 
 from jinja2 import FileSystemLoader, Environment
 
-from src.workflow_generator.utils import get_workflow_generator_path
+from src.workflow_generator_module.utils import get_workflow_generator_path
 
 
 def get_template(template_type: str):

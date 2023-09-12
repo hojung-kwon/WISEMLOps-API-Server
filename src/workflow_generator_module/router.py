@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from src.response import Response
-from src.workflow_generator import pipeline_gen_service
-from src.workflow_generator.schemas import PipelineInfo, DagInfo
+from src.workflow_generator_module import pipeline_gen_service
+from src.workflow_generator_module.schemas import PipelineInfo, DagInfo
 
 router = APIRouter(
     prefix="/workflow",
