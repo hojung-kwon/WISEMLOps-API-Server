@@ -179,7 +179,7 @@ async def kserve_exception_handler(request: Request, exc: KServeException):
 
 
 @app.exception_handler(MlflowException)
-async def kserve_exception_handler(request: Request, exc: KServeException):
+async def kserve_exception_handler(request: Request, exc: MlflowException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})
 
