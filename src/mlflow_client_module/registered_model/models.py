@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any
 
 from pydantic import BaseModel
 
-from src.mlflow_client.models import Tag
+from src.mlflow_client_module.models import Tag
 
 
 class RegisteredModelInfo(BaseModel):

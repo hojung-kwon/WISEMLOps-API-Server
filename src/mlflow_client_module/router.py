@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.mlflow_client.experiment.router import router as experiment_router
-from src.mlflow_client.model_version.router import router as model_version_router
-from src.mlflow_client.registered_model.router import router as registered_model_router
-from src.mlflow_client.run.router import router as run_router
+from src.mlflow_client_module.experiment.router import router as experiment_router
+from src.mlflow_client_module.model_version.router import router as model_version_router
+from src.mlflow_client_module.registered_model.router import router as registered_model_router
+from src.mlflow_client_module.run.router import router as run_router
 
 router = APIRouter(
     prefix="/mlflow",

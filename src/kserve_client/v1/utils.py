@@ -5,7 +5,7 @@ from kserve import V1beta1InferenceServiceSpec, V1beta1PredictorSpec, V1beta1Mod
 from kubernetes import client
 from mlflow import MlflowException
 
-from src.mlflow_client import _mlflow_client
+from src.mlflow_client_module import _mlflow_client
 
 
 def create_inference_service_info(name: str, namespace: str, storage_uri: Optional[str] = None,
