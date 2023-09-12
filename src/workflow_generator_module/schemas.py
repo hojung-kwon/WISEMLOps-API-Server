@@ -3,6 +3,12 @@ from typing import List, Dict, Optional
 from pydantic import BaseModel
 
 
+class Pipeline(BaseModel):
+    pipeline_name: str
+    pipeline_package_path: str
+    description: Optional[str] = None
+
+
 class NodeDataToolbar(BaseModel):
     position: str
 

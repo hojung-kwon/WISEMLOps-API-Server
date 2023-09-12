@@ -4,7 +4,7 @@ from typing import Dict, Optional
 from jinja2 import Template, TemplateError
 
 from src.workflow_generator_module.exceptions import WorkflowTemplateError
-from src.workflow_generator_module.schemas import PipelineInfo, DagInfo
+from src.workflow_generator_module.schemas import PipelineInfo, DagInfo, Pipeline
 from src.workflow_generator_module.utils import get_workflow_name, get_workflow_generator_path
 
 
@@ -31,16 +31,20 @@ class PipelineGenService:
         pipeline_dsl = self._get_rendered_kfp_pipeline_dsl(pipeline_info, tar_file)
         with open(dsl_file, "w", encoding='utf-8') as dsl_output:
             dsl_output.write(pipeline_dsl)
-        return dsl_file
+        return dsl_file, tar_file
 
     def make_kfp_pipeline_tar_gz(self, pipeline_info: PipelineInfo):
         try:
             output_path = os.path.join(get_workflow_generator_path(), "output")
             if not os.path.exists(output_path):
                 os.makedirs(output_path)
-            dsl_file = self._write_kfp_pipeline_dsl_file(pipeline_info, output_path=output_path)
+            dsl_file, tar_file = self._write_kfp_pipeline_dsl_file(pipeline_info, output_path=output_path)
             os.system("python " + dsl_file)
-            return pipeline_info
+            if os.path.exists(tar_file):
+                return Pipeline(pipeline_name=pipeline_info.pipeline_name,
+                                pipeline_package_path=tar_file,
+                                description=pipeline_info.pipeline_description)
+            return None
         except TemplateError as te:
             raise WorkflowTemplateError(te)
 
