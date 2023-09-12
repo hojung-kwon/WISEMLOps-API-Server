@@ -1,5 +1,7 @@
 from src import app_config
 
+MODULE_CODE = 102
+
 
 def get_kube_config_path():
     return app_config.CLUSTER_KUBE_CONFIG_PATH
