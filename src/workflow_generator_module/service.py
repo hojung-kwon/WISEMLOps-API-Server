@@ -3,9 +3,9 @@ from typing import Dict, Optional
 
 from jinja2 import Template, TemplateError
 
-from src.workflow_generator.exceptions import WorkflowTemplateError
-from src.workflow_generator.schemas import PipelineInfo, DagInfo
-from src.workflow_generator.utils import get_workflow_name, get_workflow_generator_path
+from src.workflow_generator_module.exceptions import WorkflowTemplateError
+from src.workflow_generator_module.schemas import PipelineInfo, DagInfo
+from src.workflow_generator_module.utils import get_workflow_name, get_workflow_generator_path
 
 
 class PipelineGenService:
