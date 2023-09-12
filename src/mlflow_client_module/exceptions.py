@@ -1,5 +1,6 @@
 import json
-from ctypes import Union
+
+from mlflow import MlflowException as MlflowApiException
 
 from src.mlflow_client_module.run import MODULE_CODE
 
@@ -21,8 +22,7 @@ class MlflowException(Exception):
 
 
 class MlflowApiError(MlflowException):
-    def __init__(self, e: Union[MlflowException]):
-        body = json.loads(e.body)
-        self.code = int(f"{MODULE_CODE}{e.status}")
-        self.message = body['message']
-        self.result = e.reason
+    def __init__(self, e: MlflowApiException):
+        self.code = int(f"{MODULE_CODE}{e.error_code}")
+        self.message = e.message
+        self.result = e.json_kwargs
