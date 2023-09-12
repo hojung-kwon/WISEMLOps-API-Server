@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", tags=["kfp"], response_model=Response)
+@router.get("", tags=["kfp"], response_model=Response)
 async def get_kfp_healthz():
     return Response.from_result(kfp_service.get_kfp_healthz())
 
