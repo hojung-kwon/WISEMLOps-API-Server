@@ -13,7 +13,8 @@ from uvicorn import Config, Server
 from src.exceptions import CustomHTTPError
 from src.kfp_module import router as kfp_router
 from src.kfp_module.exceptions import KFPException
-from src.kserve_client import router as kserve_router
+from src.kserve_module import router as kserve_router
+from src.kserve_module.exceptions import KServeException
 from src.kubernetes_module.cluster import router as cluster_router
 from src.kubernetes_module.crds import router as crd_router
 from src.kubernetes_module.exceptions import KubernetesException
@@ -166,6 +167,12 @@ async def kfp_exception_handler(request: Request, exc: KFPException):
 
 @app.exception_handler(KubernetesException)
 async def kubernetes_exception_handler(request: Request, exc: KubernetesException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(KServeException)
+async def kserve_exception_handler(request: Request, exc: KServeException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})
 
