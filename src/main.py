@@ -19,6 +19,7 @@ from src.kubernetes_module.cluster import router as cluster_router
 from src.kubernetes_module.crds import router as crd_router
 from src.kubernetes_module.exceptions import KubernetesException
 from src.minio_module import router as minio_router
+from src.minio_module.exceptions import MinIOException
 from src.mlflow_client_module import router as mlflow_router
 from src.mlflow_client_module.exceptions import MlflowException
 from src.version import get_version_info, write_version_py
@@ -155,9 +156,9 @@ async def workflow_pipeline_exception_handler(request: Request, exc: WorkflowGen
 
 
 @app.exception_handler(MinioException)
-async def minio_exception_handler(request: Request, exc: MinioException):
+async def minio_exception_handler(request: Request, exc: MinIOException):
     return JSONResponse(status_code=200,
-                        content={"code": 400000, "message": "minioException", "result": exc.args})
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
 @app.exception_handler(KFPException)
