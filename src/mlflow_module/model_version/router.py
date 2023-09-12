@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.mlflow_client_module.model_version import service, models
+from src.mlflow_module.model_version import service, models
 from src.response import Response
 
 router = APIRouter(

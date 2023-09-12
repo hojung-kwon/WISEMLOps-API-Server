@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any, List
 
 from mlflow import MlflowClient
 
-from src.mlflow_client_module.exceptions import MlflowApiError, MlflowException
+from src.mlflow_module.exceptions import MlflowApiError, MlflowException
 
 
 class ExperimentService:

@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any
 
 from pydantic import BaseModel
 
-from src.mlflow_client_module.models import Tag
+from src.mlflow_module.models import Tag
 
 
 class ModelVersionInfo(BaseModel):

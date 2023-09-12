@@ -1,7 +1,7 @@
 import os
 
 from src import app_config
-from src.mlflow_client_module.experiment.service import ExperimentService
+from src.mlflow_module.experiment.service import ExperimentService
 
 os.environ["MLFLOW_S3_ENDPOINT_URL"] = app_config.MINIO_ENDPOINT
 os.environ["AWS_ACCESS_KEY_ID"] = app_config.MINIO_ACCESS_KEY

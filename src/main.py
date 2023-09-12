@@ -20,8 +20,8 @@ from src.kubernetes_module.crds import router as crd_router
 from src.kubernetes_module.exceptions import KubernetesException
 from src.minio_module import router as minio_router
 from src.minio_module.exceptions import MinIOException
-from src.mlflow_client_module import router as mlflow_router
-from src.mlflow_client_module.exceptions import MlflowException
+from src.mlflow_module import router as mlflow_router
+from src.mlflow_module.exceptions import MlflowException
 from src.version import get_version_info, write_version_py
 from src.workflow_generator_module import router as gen_pipeline_router
 from src.workflow_generator_module.exceptions import WorkflowGeneratorException
