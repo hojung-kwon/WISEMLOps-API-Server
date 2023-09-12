@@ -3,7 +3,8 @@ from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.mlflow_module.run import service, models
+from src.mlflow_module.run import service
+from src.mlflow_module.schemas import RunInfo, RunOptions
 from src.response import Response
 
 router = APIRouter(
@@ -15,7 +16,7 @@ router = APIRouter(
 
 
 @router.post("", response_model=Response)
-async def create_run(run_info: models.RunInfo):
+async def create_run(run_info: RunInfo):
     result = service.create_run(run_info.experiment_id, start_time=run_info.start_time, tags=run_info.tags,
                                 run_name=run_info.run_name)
     return Response.from_result(result)
@@ -40,7 +41,7 @@ async def get_run(run_id: str):
 
 
 @router.put("/{run_id}", response_model=Response)
-async def update_run(run_id: str, run_options: models.RunOptions):
+async def update_run(run_id: str, run_options: RunOptions):
     result = service.update_run(run_id, status=run_options.status, name=run_options.name)
     return Response.from_result(result)
 
@@ -64,13 +65,13 @@ async def restore_run(run_id: str):
 
 
 @router.post("/{run_id}/terminated", response_model=Response)
-async def set_terminated(run_id: str, run_options: models.RunOptions):
+async def set_terminated(run_id: str, run_options: RunOptions):
     result = service.set_terminated(run_id, run_options.status, run_options.end_time)
     return Response.from_result(result)
 
 
 @router.put("/{run_id}/tag", response_model=Response)
-async def set_tag(run_id: str, run_options: models.RunOptions):
+async def set_tag(run_id: str, run_options: RunOptions):
     tag = run_options.tag
     key = None
     value = None

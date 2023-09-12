@@ -3,7 +3,8 @@ from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.mlflow_module.model_version import service, models
+from src.mlflow_module.model_version import service
+from src.mlflow_module.schemas import ModelVersionInfo, ModelVersionOptions
 from src.response import Response
 
 router = APIRouter(
@@ -15,7 +16,7 @@ router = APIRouter(
 
 
 @router.post("", response_model=Response)
-async def create_model_version(model_version_info: models.ModelVersionInfo):
+async def create_model_version(model_version_info: ModelVersionInfo):
     result = service.create_model_version(model_version_info.name, model_version_info.source,
                                           run_id=model_version_info.run_id, tags=model_version_info.tags,
                                           run_link=model_version_info.run_link,
@@ -57,7 +58,7 @@ async def delete_model_version(model_name: str, version: int):
 
 
 @router.put("/{model_name}/{version}/description", response_model=Response)
-async def update_model_version(model_name: str, version: int, model_version_options: models.ModelVersionOptions):
+async def update_model_version(model_name: str, version: int, model_version_options: ModelVersionOptions):
     result = service.update_model_version(model_name, str(version), model_version_options.description)
     return Response.from_result(result)
 
@@ -76,7 +77,7 @@ async def get_model_version_stages(model_name: str, version: int):
 
 @router.put("/{model_name}/{version}/{stage}", response_model=Response)
 async def transition_model_version_stage(model_name: str, version: int, stage: str,
-                                         model_version_options: models.ModelVersionOptions):
+                                         model_version_options: ModelVersionOptions):
     result = service.transition_model_version_stage(model_name, str(version), stage,
                                                     archive_existing_versions=model_version_options.archive_existing_version)
     return Response.from_result(result)
@@ -84,7 +85,7 @@ async def transition_model_version_stage(model_name: str, version: int, stage: s
 
 @router.put("/{model_name}/{version_or_stage}/tag", response_model=Response)
 async def set_model_version_tag(model_name: str, version_or_stage: str,
-                                model_version_options: models.ModelVersionOptions):
+                                model_version_options: ModelVersionOptions):
     tag = model_version_options.tag
     key = None
     value = None

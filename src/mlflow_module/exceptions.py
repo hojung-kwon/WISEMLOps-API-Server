@@ -2,7 +2,7 @@ import json
 
 from mlflow import MlflowException as MlflowApiException
 
-from src.mlflow_module import MODULE_CODE
+MODULE_CODE = 600
 
 
 class MlflowException(Exception):

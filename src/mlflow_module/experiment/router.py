@@ -3,7 +3,8 @@ from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.mlflow_module.experiment import service, models
+from src.mlflow_module.experiment import service
+from src.mlflow_module.schemas import ExperimentInfo, ExperimentOptions
 from src.response import Response
 
 router = APIRouter(
@@ -15,7 +16,7 @@ router = APIRouter(
 
 
 @router.post("", response_model=Response)
-async def create_experiment(experiment_info: models.ExperimentInfo):
+async def create_experiment(experiment_info: ExperimentInfo):
     result = service.create_experiment(experiment_info.name, artifact_location=experiment_info.artifact_location,
                                        tags=experiment_info.tags)
     return Response.from_result(result)
@@ -52,13 +53,13 @@ async def restore_experiment(experiment_id: int):
 
 
 @router.put("/{experiment_id}/name", response_model=Response)
-async def rename_experiment(experiment_id: int, experiment_options: models.ExperimentOptions):
+async def rename_experiment(experiment_id: int, experiment_options: ExperimentOptions):
     result = service.rename_experiment(str(experiment_id), experiment_options.name)
     return Response.from_result(result)
 
 
 @router.put("/{experiment_id}/tag", response_model=Response)
-async def set_experiment_tag(experiment_id: int, experiment_options: models.ExperimentOptions):
+async def set_experiment_tag(experiment_id: int, experiment_options: ExperimentOptions):
     tag = experiment_options.tag
     key = None
     value = None

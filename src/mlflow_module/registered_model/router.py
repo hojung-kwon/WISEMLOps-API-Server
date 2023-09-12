@@ -3,7 +3,8 @@ from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from src.mlflow_module.registered_model import service, models
+from src.mlflow_module.registered_model import service
+from src.mlflow_module.schemas import RegisteredModelInfo, RegisteredModelOptions
 from src.response import Response
 
 router = APIRouter(
@@ -15,7 +16,7 @@ router = APIRouter(
 
 
 @router.post("", response_model=Response)
-async def create_registered_model(registered_model_info: models.RegisteredModelInfo):
+async def create_registered_model(registered_model_info: RegisteredModelInfo):
     result = service.create_registered_model(registered_model_info.name, tags=registered_model_info.tags,
                                              description=registered_model_info.description)
     return Response.from_result(result)
@@ -45,20 +46,20 @@ async def delete_registered_model(model_name: str):
 
 
 @router.put("/{model_name}/name", response_model=Response)
-async def rename_registered_model(model_name: str, registered_model_options: models.RegisteredModelOptions):
+async def rename_registered_model(model_name: str, registered_model_options: RegisteredModelOptions):
     result = service.rename_registered_model(model_name, registered_model_options.name)
     return Response.from_result(result)
 
 
 @router.put("/{model_name}/description", response_model=Response)
-async def update_registered_model(model_name: str, registered_model_options: models.RegisteredModelOptions):
+async def update_registered_model(model_name: str, registered_model_options: RegisteredModelOptions):
     result = service.update_registered_model(model_name, registered_model_options.description)
     return Response.from_result(result)
 
 
 @router.put("/{model_name}/alias/{version}", response_model=Response)
 async def set_registered_model_alias(model_name: str, version: int,
-                                     registered_model_options: models.RegisteredModelOptions):
+                                     registered_model_options: RegisteredModelOptions):
     result = service.set_registered_model_alias(model_name, registered_model_options.alias, str(version))
     return Response.from_result(result)
 
@@ -70,7 +71,7 @@ async def delete_registered_model_alias(model_name: str, alias: str):
 
 
 @router.put("/{model_name}/tag", response_model=Response)
-async def set_registered_model_tag(model_name: str, registered_model_options: models.RegisteredModelOptions):
+async def set_registered_model_tag(model_name: str, registered_model_options: RegisteredModelOptions):
     tag = registered_model_options.tag
     key = None
     value = None
