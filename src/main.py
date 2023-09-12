@@ -1,24 +1,32 @@
-import os
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, Request
+from loguru import logger
+from minio.error import MinioException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
-from loguru import logger
-from fastapi import FastAPI, Request
 
-from src.version import get_version_info, write_version_py
 from src.exceptions import CustomHTTPError
-from src.kubernetes_client.cluster import router as cluster_router
-from src.kubernetes_client.crds import router as crd_router
-from src.minio_client import router as minio_router
-from src.mlflow_client import router as mlflow_router
-from src.kserve_client import router as kserve_router
-from src.workflow_generator import router as gen_pipeline_router
-from src.kubernetes_client.kfp_client import router as kfp_router
-from src.workflow_pipeline import router as pipeline_router
+from src.kfp_module import router as kfp_router
+from src.kfp_module.exceptions import KFPException
+from src.kserve_module import router as kserve_router
+from src.kserve_module.exceptions import KServeException
+from src.kubernetes_module.cluster import router as cluster_router
+from src.kubernetes_module.crds import router as crd_router
+from src.kubernetes_module.exceptions import KubernetesException
+from src.minio_module import router as minio_router
+from src.minio_module.exceptions import MinIOException
+from src.mlflow_module import router as mlflow_router
+from src.mlflow_module.exceptions import MlflowException
+from src.version import get_version_info, write_version_py
+from src.workflow_generator_module import router as gen_pipeline_router
+from src.workflow_generator_module.exceptions import WorkflowGeneratorException
+from src.workflow_pipeline_module import router as pipeline_router
+from src.workflow_pipeline_module.exceptions import WorkflowPipelineException
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 JSON_LOGS = True if os.environ.get("JSON_LOGS", "0") == "1" else False
@@ -133,6 +141,48 @@ async def forbidden_handler(request: Request, exc: CustomHTTPError):
 async def notfound_handler(request: Request, exc: CustomHTTPError):
     return JSONResponse(status_code=404,
                         content={"code": exc.status_code, "message": f"{exc.detail}"})
+
+
+@app.exception_handler(WorkflowGeneratorException)
+async def workflow_generator_exception_handler(request: Request, exc: WorkflowGeneratorException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(WorkflowPipelineException)
+async def workflow_pipeline_exception_handler(request: Request, exc: WorkflowGeneratorException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(MinioException)
+async def minio_exception_handler(request: Request, exc: MinIOException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(KFPException)
+async def kfp_exception_handler(request: Request, exc: KFPException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(KubernetesException)
+async def kubernetes_exception_handler(request: Request, exc: KubernetesException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(KServeException)
+async def kserve_exception_handler(request: Request, exc: KServeException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
+
+
+@app.exception_handler(MlflowException)
+async def mlflow_exception_handler(request: Request, exc: MlflowException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
 @app.get("/")
