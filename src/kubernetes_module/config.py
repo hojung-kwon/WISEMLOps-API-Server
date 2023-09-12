@@ -1,4 +1,5 @@
 from kubernetes import config
+
 from src import app_config
 
 
@@ -12,3 +13,5 @@ def get_nfs_config():
     return nfs_server, nfs_path
 
 
+def get_cluster_host():
+    return app_config.CLUSTER_HOST

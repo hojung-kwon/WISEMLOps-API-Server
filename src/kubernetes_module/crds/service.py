@@ -1,10 +1,11 @@
 from kubernetes.client import ApiClient, CustomObjectsApi
 from kubernetes.client.rest import ApiException
 
-from src.kubernetes_client.client import ResourceFactory
-from src.kubernetes_client.crds.utils import Render
-from src.kubernetes_client.models import Notebook
-from src.kubernetes_client.utils import response, error_with_message
+from src.kubernetes_module.crds.render import Render
+from src.kubernetes_module.exceptions import KubernetesApiError
+from src.kubernetes_module.resource import ResourceFactory
+from src.kubernetes_module.schemas import Notebook
+from src.kubernetes_module.utils import render
 
 
 class CrdService:
@@ -20,9 +21,9 @@ class CrdService:
                 plural="notebooks",
                 namespace=namespace
             )
-            return response(result, Render.to_notebook_status_list)
+            return render(result, Render.to_notebook_status_list)
         except ApiException as e:
-            return error_with_message(e)
+            raise KubernetesApiError(e)
 
     def create_notebook(self, namespace: str, notebook: Notebook):
         try:
@@ -33,9 +34,9 @@ class CrdService:
                 namespace=namespace,
                 body=body
             )
-            return response(result, Render.to_no_content)
+            return render(result, Render.to_no_content)
         except ApiException as e:
-            return error_with_message(e)
+            raise KubernetesApiError(e)
 
     def delete_notebook(self, namespace: str, name: str):
         try:
@@ -45,9 +46,9 @@ class CrdService:
                 namespace=namespace,
                 name=name
             )
-            return response(result, Render.to_no_content)
+            return render(result, Render.to_no_content)
         except ApiException as e:
-            return error_with_message(e)
+            raise KubernetesApiError(e)
 
     def get_notebook(self, namespace: str, name: str):
         try:
@@ -57,9 +58,9 @@ class CrdService:
                 namespace=namespace,
                 name=name
             )
-            return response(result, Render.to_notebook_details)
+            return render(result, Render.to_notebook_details)
         except ApiException as e:
-            return error_with_message(e)
+            raise KubernetesApiError(e)
 
     def get_notebook_overview(self, namespace: str, name: str):
         try:
@@ -69,7 +70,6 @@ class CrdService:
                 namespace=namespace,
                 name=name
             )
-            return response(result, Render.to_notebook_overview)
+            return render(result, Render.to_notebook_overview)
         except ApiException as e:
-            return error_with_message(e)
-
+            raise KubernetesApiError(e)

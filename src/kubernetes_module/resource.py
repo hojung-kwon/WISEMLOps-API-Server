@@ -1,35 +1,12 @@
 from kubernetes import client
-from src import app_config
-from src.kubernetes_client.models import Volume, VolumeClaim, ConfigMap, Secret, \
+
+from src.kubernetes_module.config import get_nfs_config
+from src.kubernetes_module.schemas import Volume, VolumeClaim, ConfigMap, Secret, \
     Container, ContainerVolume, ContainerVolumeType, \
     Pod, Deployment, Service, Ingress, Metadata, Notebook
 
 
-class ClientFactory:
-
-    @staticmethod
-    def get_core_client():
-        return client.CoreV1Api()
-
-    @staticmethod
-    def get_deployment_client():
-        return client.AppsV1Api()
-
-    @staticmethod
-    def get_networking_client():
-        return client.NetworkingV1Api()
-
-    @staticmethod
-    def get_api_client():
-        return client.ApiClient()
-
-    @staticmethod
-    def create_crd_client():
-        return client.CustomObjectsApi()
-
-
 class ResourceFactory:
-
     @staticmethod
     def build_metadata(metadata: Metadata):
         return client.V1ObjectMeta(
@@ -46,7 +23,7 @@ class ResourceFactory:
 
     @staticmethod
     def build_nfs_volume():
-        nfs_server, nfs_path = app_config.get_nfs_config()
+        nfs_server, nfs_path = get_nfs_config()
         return client.V1NFSVolumeSource(
             server=nfs_server,
             path=nfs_path,

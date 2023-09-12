@@ -1,21 +1,19 @@
-from src.kubernetes_client.models import Metadata
-from src.kubernetes_client.utils import to_yaml
+from src.kubernetes_module.schemas import Metadata
+from src.kubernetes_module.utils import to_yaml, get_status_uri, get_overview_uri, get_logs_uri, get_connect_uri, \
+    get_delete_uri
 
 
 class Render:
-
     @staticmethod
     def _to_status_list(model, to_each_shape: callable):
         result = []
-        if 'items' not in model:
-            return {"result": [to_each_shape(model)]}
-        for item in model['items']:
+        for item in model.items:
             result.append(to_each_shape(item))
-        return {"result": result}
+        return result
 
     @staticmethod
     def to_no_content(model):
-        return {"result": ['no content']}
+        return None
 
     @staticmethod
     def metadata_of(item: dict):
@@ -59,14 +57,12 @@ class Render:
         namespace = model['metadata']['namespace']
         name = model['metadata']['name']
         return {
-            "result": {
-                "status": get_status_uri(namespace, label_selector),
-                "overview": get_overview_uri(namespace, name),
-                "logs": get_logs_uri(namespace, label_selector),
-                "connect": get_connect_uri(namespace, name),
-                "delete": get_delete_uri(namespace, name),
-                "yaml": to_yaml(model),
-            }
+            "status": get_status_uri(namespace, label_selector),
+            "overview": get_overview_uri(namespace, name),
+            "logs": get_logs_uri(namespace, label_selector),
+            "connect": get_connect_uri(namespace, name),
+            "delete": get_delete_uri(namespace, name),
+            "yaml": to_yaml(model),
         }
 
     @staticmethod
@@ -78,42 +74,17 @@ class Render:
         image = _notebook['image']
         conditions = item['status']['conditions']
         return {
-            "result": {
-                "name": metadata.name,
-                "labels": metadata.labels,
-                "annotations": metadata.annotations,
-                "image": image,
-                "min_cpu": _notebook['resources']['requests']['cpu'],
-                "max_cpu": _notebook['resources']['limits']['cpu'],
-                "min_memory": _notebook['resources']['requests']['memory'],
-                "max_memory": _notebook['resources']['limits']['memory'],
-                "min_gpu": _notebook['resources']['requests']['nvidia.com/gpu'],
-                "max_gpu": _notebook['resources']['limits']['nvidia.com/gpu'],
-                "create_date": metadata.create_date,
-                "volumes": volumes,
-                "conditions": conditions,
-            }
+            "name": metadata.name,
+            "labels": metadata.labels,
+            "annotations": metadata.annotations,
+            "image": image,
+            "min_cpu": _notebook['resources']['requests']['cpu'],
+            "max_cpu": _notebook['resources']['limits']['cpu'],
+            "min_memory": _notebook['resources']['requests']['memory'],
+            "max_memory": _notebook['resources']['limits']['memory'],
+            "min_gpu": _notebook['resources']['requests']['nvidia.com/gpu'],
+            "max_gpu": _notebook['resources']['limits']['nvidia.com/gpu'],
+            "create_date": metadata.create_date,
+            "volumes": volumes,
+            "conditions": conditions,
         }
-
-
-def get_connect_uri(namespace: str, name: str):
-    from src import app_config
-    return f"{app_config.CLUSTER_HOST}/notebook/{namespace}/{name}/lab"
-
-
-def get_delete_uri(namespace: str, name: str):
-    return f"/crds/namespaces/{namespace}/notebooks/{name}"
-
-
-def get_status_uri(namespace: str, label_selector: str):
-    return f"/cluster/namespaces/{namespace}/pods/?label_selector={label_selector}"
-
-
-def get_overview_uri(namespace: str, name: str):
-    return f"/crds/namespaces/{namespace}/notebooks/{name}/overview"
-
-
-def get_logs_uri(namespace: str, label_selector: str):
-    return f"/cluster/namespaces/{namespace}/logs/?label_selector={label_selector}"
-
-

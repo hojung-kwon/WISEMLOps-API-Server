@@ -1,22 +1,21 @@
-from src.kubernetes_client.models import Metadata
+from src.kubernetes_module.schemas import Metadata
 
 
 class Render:
-
     @staticmethod
     def _to_status_list(model, to_each_shape: callable):
         result = []
         for item in model.items:
             result.append(to_each_shape(item))
-        return {"result": result}
+        return result
 
     @staticmethod
     def to_name_list(model):
-        return {"result": [item.metadata.name for item in model.items]}
+        return [item.metadata.name for item in model.items]
 
     @staticmethod
     def to_no_content(model):
-        return {"result": ['no content']}
+        return None
 
     @staticmethod
     def metadata_of(item):
@@ -131,7 +130,7 @@ class Render:
         _containers = _spec.containers
         volumes = _spec.volumes
         conditions = item.status.conditions
-        return {'result': [{
+        return {
             "name": metadata.name,
             "labels": metadata.labels,
             "annotations": metadata.annotations,
@@ -145,17 +144,17 @@ class Render:
             "create_date": metadata.create_date,
             "conditions": conditions,
             "volumes": volumes,
-        }]}
+        }
 
     @staticmethod
     def to_pod_logs(items: dict):
         for container in items.keys():
             items[container] = items[container].split("\n")
-        return {"result": [items]}
+        return [items]
 
     @staticmethod
     def to_container_logs(item: str):
-        return {"result": item.split("\n")}
+        return item.split("\n")
 
     @staticmethod
     def to_deployment_status_list(model):
@@ -201,4 +200,3 @@ class Render:
             "hosts": [rule.host for rule in item.spec.rules],
             "create_date": metadata.create_date,
         }
-

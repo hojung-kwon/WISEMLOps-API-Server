@@ -1,7 +1,7 @@
-from src.kubernetes_client.client import ClientFactory
-from src.kubernetes_client.cluster.service import ClusterService
-from src.kubernetes_client.config import load_cluster_config
-from src.kubernetes_client.crds.service import CrdService
+from src.kubernetes_module.client import ClientFactory
+from src.kubernetes_module.cluster.service import ClusterService
+from src.kubernetes_module.config import load_cluster_config
+from src.kubernetes_module.crds.service import CrdService
 
 load_cluster_config()
 
