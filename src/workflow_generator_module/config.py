@@ -6,6 +6,8 @@ from jinja2 import FileSystemLoader, Environment
 
 from src.workflow_generator_module.utils import get_workflow_generator_path
 
+MODULE_CODE = 106
+
 
 def get_template(template_type: str):
     template_path = os.path.join(get_workflow_generator_path(), "template")
