@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Depends
 from loguru import logger
-from minio.error import MinioException
 from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
@@ -156,12 +155,12 @@ async def workflow_generator_exception_handler(request: Request, exc: WorkflowGe
 
 
 @app.exception_handler(WorkflowPipelineException)
-async def workflow_pipeline_exception_handler(request: Request, exc: WorkflowGeneratorException):
+async def workflow_pipeline_exception_handler(request: Request, exc: WorkflowPipelineException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
-@app.exception_handler(MinioException)
+@app.exception_handler(MinIOException)
 async def minio_exception_handler(request: Request, exc: MinIOException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})
