@@ -13,14 +13,15 @@ from src.workflow_generator_module.exceptions import WorkflowTemplateError
 from src.workflow_generator_module.schemas import PipelineInfo
 from src.workflow_pipeline_module import workflow_pipeline_service
 from src.workflow_pipeline_module.exceptions import PipelineCreateError
-from src.workflow_pipeline_module.schemas import Pipeline
+from src.workflow_pipeline_module.schemas import PipelineDto
 
 
 class WorkflowPipelineService:
     def __init__(self):
         pass
 
-    def make_pipeline(self, pipeline_info: PipelineInfo, db: Session):
+    @staticmethod
+    def make_pipeline(pipeline_info: PipelineInfo, db: Session):
         try:
             # workflow/kfp 호출, pipeline tar.gz 생성
             pipeline = pipeline_gen_service.make_kfp_pipeline_tar_gz(pipeline_info)
@@ -48,14 +49,14 @@ class WorkflowPipelineService:
             position = pipeline_info.position
             zoom = pipeline_info.zoom
 
-            db_pipeline = Pipeline(pipeline_id=pipeline_id,
-                                   pipeline_name=pipeline_name,
-                                   pipeline_description=pipeline_description,
-                                   version_info=version_info,
-                                   nodes=nodes,
-                                   edges=edges,
-                                   position=position,
-                                   zoom=zoom)
+            db_pipeline = PipelineDto(pipeline_id=pipeline_id,
+                                      pipeline_name=pipeline_name,
+                                      pipeline_description=pipeline_description,
+                                      version_info=version_info,
+                                      nodes=nodes,
+                                      edges=edges,
+                                      position=position,
+                                      zoom=zoom)
 
             result = workflow_pipeline_service.create_pipeline(db=db, pipeline=db_pipeline)
         except PipelineCreateError as pe:

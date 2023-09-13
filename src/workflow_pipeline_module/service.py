@@ -21,8 +21,8 @@ class WorkflowPipelineService:
     def get_pipelines(db: Session, pipeline_name: Optional[str] = None, skip: int = 0, limit: int = 100):
         if pipeline_name is None or pipeline_name.strip() == "":
             return db.query(Pipeline).offset(skip).limit(limit).all()
-        pipeline_result = db.query(Pipeline) \
-            .filter(Pipeline.pipeline_name == pipeline_name).offset(skip).limit(limit).all()
+        pipeline_result = db.query(Pipeline).filter(
+            Pipeline.pipeline_name == pipeline_name).offset(skip).limit(limit).all()
         return pipeline_result
 
     @staticmethod

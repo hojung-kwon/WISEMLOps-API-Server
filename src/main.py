@@ -11,6 +11,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
 
+from src import app_config
 from src.exceptions import CustomHTTPError
 from src.kfp_module import router as kfp_router
 from src.kfp_module.exceptions import KFPException
@@ -29,7 +30,8 @@ from src.version import get_version_info, write_version_py
 from src.workflow_generator_module import router as gen_pipeline_router
 from src.workflow_generator_module.exceptions import WorkflowGeneratorException
 from src.workflow_generator_module.schemas import PipelineInfo
-from src.workflow_pipeline_module import router as pipeline_router, get_db
+from src.workflow_pipeline_module import router as pipeline_router
+from src.workflow_pipeline_module.database import get_db
 from src.workflow_pipeline_module.exceptions import WorkflowPipelineException
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
@@ -216,7 +218,7 @@ workflow_pipeline_service = WorkflowPipelineService()
 
 @app.post("/workflow/pipeline", tags=["workflow"])
 async def custom_pipeline(pipeline_info: PipelineInfo, db: Session = Depends(get_db)):
-    return Response.from_result(workflow_pipeline_service.make_pipeline(pipeline_info, db))
+    return Response.from_result(app_config.SERVICE_CODE, workflow_pipeline_service.make_pipeline(pipeline_info, db))
 
 
 if __name__ == "__main__":

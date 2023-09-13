@@ -5,11 +5,10 @@ from fastapi import Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from src.workflow_pipeline_module import get_db
 from src.response import Response
-from src.workflow_pipeline_module import engine, workflow_pipeline_service
-from src.workflow_pipeline_module import models
+from src.workflow_pipeline_module import workflow_pipeline_service
 from src.workflow_pipeline_module.config import MODULE_CODE
+from src.workflow_pipeline_module.database import get_db
 from src.workflow_pipeline_module.schemas import PipelineDto
 
 router = APIRouter(
@@ -18,8 +17,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
     default_response_class=JSONResponse,
 )
-
-models.Base.metadata.create_all(bind=engine)
 
 
 @router.post("", response_model=Response)

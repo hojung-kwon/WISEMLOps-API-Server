@@ -22,4 +22,6 @@ class Config:
         self.MLFLOW_TRACKING_URI = self._config['MLFLOW']['TRACKING_URI']
         self.KUBEFLOW_PIPELINES_ENDPOINT = self._config['KUBEFLOW']['PIPELINES']['ENDPOINT']
         self.SQLALCHEMY_DATABASE_URL = self._config['DATABASE']['SQLALCHEMY_DATABASE_URL']
+
+        self.SERVICE_CODE = 100
         pass
