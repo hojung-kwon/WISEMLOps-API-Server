@@ -5,8 +5,9 @@ from fastapi import Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from src.workflow_pipeline_module import get_db
 from src.response import Response
-from src.workflow_pipeline_module import SessionLocal, engine, workflow_pipeline_service
+from src.workflow_pipeline_module import engine, workflow_pipeline_service
 from src.workflow_pipeline_module import models
 from src.workflow_pipeline_module.config import MODULE_CODE
 from src.workflow_pipeline_module.schemas import PipelineDto
@@ -19,15 +20,6 @@ router = APIRouter(
 )
 
 models.Base.metadata.create_all(bind=engine)
-
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post("", response_model=Response)
