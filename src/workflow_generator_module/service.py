@@ -27,7 +27,8 @@ class PipelineGenService:
     def _write_kfp_pipeline_dsl_file(self, pipeline_info: PipelineInfo, output_path: Optional[str] = None):
         pipeline_info.pipeline_name = get_workflow_name(pipeline_info.pipeline_name)
         dsl_file = os.path.join(output_path, f"{pipeline_info.pipeline_name}.py")
-        tar_file = os.path.abspath(os.path.join(output_path, f"{pipeline_info.pipeline_name}.tar.gz"))
+        tar_file = "/".join(
+            os.path.abspath(os.path.join(output_path, f"{pipeline_info.pipeline_name}.tar.gz")).split(os.sep))
         pipeline_dsl = self._get_rendered_kfp_pipeline_dsl(pipeline_info, tar_file)
         with open(dsl_file, "w", encoding='utf-8') as dsl_output:
             dsl_output.write(pipeline_dsl)
