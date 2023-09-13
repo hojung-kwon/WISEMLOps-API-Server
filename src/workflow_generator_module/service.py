@@ -27,23 +27,23 @@ class PipelineGenService:
     def _write_kfp_pipeline_dsl_file(self, pipeline_info: PipelineInfo, output_path: Optional[str] = None):
         pipeline_info.pipeline_name = get_workflow_name(pipeline_info.pipeline_name)
         dsl_file = os.path.join(output_path, f"{pipeline_info.pipeline_name}.py")
-        tar_file = "/".join(
-            os.path.abspath(os.path.join(output_path, f"{pipeline_info.pipeline_name}.tar.gz")).split(os.sep))
+        tar_file_path = os.path.abspath(os.path.join(output_path, f"{pipeline_info.pipeline_name}.tar.gz"))
+        tar_file = "/".join(tar_file_path.split(os.sep))
         pipeline_dsl = self._get_rendered_kfp_pipeline_dsl(pipeline_info, tar_file)
         with open(dsl_file, "w", encoding='utf-8') as dsl_output:
             dsl_output.write(pipeline_dsl)
-        return dsl_file, tar_file
+        return dsl_file, tar_file_path
 
     def make_kfp_pipeline_tar_gz(self, pipeline_info: PipelineInfo):
         try:
             output_path = os.path.join(get_workflow_generator_path(), "output")
             if not os.path.exists(output_path):
                 os.makedirs(output_path)
-            dsl_file, tar_file = self._write_kfp_pipeline_dsl_file(pipeline_info, output_path=output_path)
+            dsl_file, tar_file_path = self._write_kfp_pipeline_dsl_file(pipeline_info, output_path=output_path)
             os.system("python " + dsl_file)
-            if os.path.exists(tar_file):
+            if os.path.exists(tar_file_path):
                 return Pipeline(pipeline_name=pipeline_info.pipeline_name,
-                                pipeline_package_path=tar_file,
+                                pipeline_package_path=tar_file_path,
                                 description=pipeline_info.pipeline_description)
             return None
         except TemplateError as te:
