@@ -15,8 +15,3 @@ class Pipeline(BaseModel):
     zoom: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-

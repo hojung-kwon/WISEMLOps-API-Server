@@ -3,9 +3,10 @@ import os
 import sys
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from loguru import logger
 from minio.error import MinioException
+from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
@@ -28,7 +29,7 @@ from src.version import get_version_info, write_version_py
 from src.workflow_generator_module import router as gen_pipeline_router
 from src.workflow_generator_module.exceptions import WorkflowGeneratorException
 from src.workflow_generator_module.schemas import PipelineInfo
-from src.workflow_pipeline_module import router as pipeline_router
+from src.workflow_pipeline_module import router as pipeline_router, get_db
 from src.workflow_pipeline_module.exceptions import WorkflowPipelineException
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
@@ -214,8 +215,8 @@ workflow_pipeline_service = WorkflowPipelineService()
 
 
 @app.post("/workflow/pipeline", tags=["workflow"])
-async def custom_pipeline(pipeline_info: PipelineInfo):
-    return Response.from_result(workflow_pipeline_service.make_pipeline(pipeline_info))
+async def custom_pipeline(pipeline_info: PipelineInfo, db: Session = Depends(get_db)):
+    return Response.from_result(workflow_pipeline_service.make_pipeline(pipeline_info, db))
 
 
 if __name__ == "__main__":
