@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 
 from src.response import Response
 from src.workflow_generator_module import pipeline_gen_service
+from src.workflow_generator_module.config import MODULE_CODE
 from src.workflow_generator_module.schemas import PipelineInfo, DagInfo
 
 router = APIRouter(
@@ -14,9 +15,9 @@ router = APIRouter(
 
 @router.post("/kfp", tags=["workflow"], response_model=Response)
 async def make_kfp_pipeline_tar_gz(pipeline_info: PipelineInfo):
-    return Response.from_result(pipeline_gen_service.make_kfp_pipeline_tar_gz(pipeline_info))
+    return Response.from_result(MODULE_CODE, pipeline_gen_service.make_kfp_pipeline_tar_gz(pipeline_info))
 
 
 @router.post("/airflow", tags=["workflow"], response_model=Response)
 async def make_airflow_dag_file(dag_info: DagInfo, pipeline_info: PipelineInfo):
-    return Response.from_result(pipeline_gen_service.make_airflow_dag_file(dag_info, pipeline_info))
+    return Response.from_result(MODULE_CODE, pipeline_gen_service.make_airflow_dag_file(dag_info, pipeline_info))

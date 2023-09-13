@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
+from src.mlflow_module.config import MODULE_CODE
 from src.mlflow_module.model_version import service
 from src.mlflow_module.schemas import ModelVersionInfo, ModelVersionOptions
 from src.response import Response
@@ -22,7 +23,7 @@ async def create_model_version(model_version_info: ModelVersionInfo):
                                           run_link=model_version_info.run_link,
                                           description=model_version_info.description,
                                           await_creation_for=model_version_info.await_creation_for)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.get("", response_model=Response)
@@ -33,7 +34,7 @@ async def search_model_versions(max_results: Optional[int] = 1000, filter_string
         order_by_list = order_by.split(",")
     result = service.search_model_versions(max_results=max_results, filter_string=filter_string, order_by=order_by_list,
                                            page_token=page_token)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.get("/{model_name}/latest", response_model=Response)
@@ -42,37 +43,37 @@ async def get_latest_versions(model_name: str, stage: str = None):
     if stage:
         stages = [stage]
     result = service.get_latest_versions(model_name, stages)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.get("/{model_name}/{version}", response_model=Response)
 async def get_model_version(model_name: str, version: int):
     result = service.get_model_version(model_name, str(version))
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.delete("/{model_name}/{version}", response_model=Response)
 async def delete_model_version(model_name: str, version: int):
     result = service.delete_model_version(model_name, str(version))
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.put("/{model_name}/{version}/description", response_model=Response)
 async def update_model_version(model_name: str, version: int, model_version_options: ModelVersionOptions):
     result = service.update_model_version(model_name, str(version), model_version_options.description)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.get("/{model_name}/{version}/uri", response_model=Response)
 async def get_model_version_download_uri(model_name: str, version: int):
     result = service.get_model_version_download_uri(model_name, str(version))
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.get("/{model_name}/{version}/stages", response_model=Response)
 async def get_model_version_stages(model_name: str, version: int):
     result = service.get_model_version_stages(model_name, str(version))
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.put("/{model_name}/{version}/{stage}", response_model=Response)
@@ -80,7 +81,7 @@ async def transition_model_version_stage(model_name: str, version: int, stage: s
                                          model_version_options: ModelVersionOptions):
     result = service.transition_model_version_stage(model_name, str(version), stage,
                                                     archive_existing_versions=model_version_options.archive_existing_version)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.put("/{model_name}/{version_or_stage}/tag", response_model=Response)
@@ -99,7 +100,7 @@ async def set_model_version_tag(model_name: str, version_or_stage: str,
     else:
         stage = version_or_stage
     result = service.set_model_version_tag(model_name, version=version, stage=stage, key=key, value=value)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.delete("/{model_name}/{version_or_stage}/tag/{tag_key}", response_model=Response)
@@ -111,10 +112,10 @@ async def delete_model_version_tag(model_name: str, version_or_stage: str, tag_k
     else:
         stage = version_or_stage
     result = service.delete_model_version_tag(model_name, version=version, stage=stage, key=tag_key)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
 
 
 @router.get("/{model_name}/alias/{alias}", response_model=Response)
 async def get_model_version_by_alias(model_name: str, alias: str):
     result = service.get_model_version_by_alias(model_name, alias)
-    return Response.from_result(result)
+    return Response.from_result(MODULE_CODE, result)
