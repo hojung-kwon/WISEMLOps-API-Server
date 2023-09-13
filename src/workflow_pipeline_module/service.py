@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.workflow_pipeline_module import models
 from src.workflow_pipeline_module.exceptions import PipelineCreateError
-from src.workflow_pipeline_module.pipeline_dto import PipelineDto
+from src.workflow_pipeline_module.schemas import Pipeline
 
 
 class WorkflowPipelineService:
@@ -23,19 +23,12 @@ class WorkflowPipelineService:
             .filter(models.Pipeline.pipeline_name == pipeline_name).offset(skip).limit(limit).all()
         return pipeline_result
 
-    def create_pipeline(self, db: Session, pipeline: PipelineDto):
-        # db_pipeline = self.get_pipelines(db, pipeline_name=pipeline.pipeline_name)
-        # if db_pipeline:
-        #     raise PipelineAlreadyExistsError(pipeline)
+    def create_pipeline(self, db: Session, pipeline: Pipeline):
         try:
-            # TODO : pipeline upload 후, pipeline_id 얻고 넣기
-            import uuid
-            pipeline_id = uuid.uuid4()
-
             created_at = datetime.now()
             updated_at = datetime.now()
 
-            db_pipeline = models.Pipeline(pipeline_id=pipeline_id, pipeline_name=pipeline.pipeline_name,
+            db_pipeline = models.Pipeline(pipeline_id=pipeline.pipeline_id, pipeline_name=pipeline.pipeline_name,
                                           pipeline_description=pipeline.pipeline_description, nodes=pipeline.nodes,
                                           edges=pipeline.edges, position=pipeline.position, zoom=pipeline.zoom,
                                           created_at=created_at, updated_at=updated_at)

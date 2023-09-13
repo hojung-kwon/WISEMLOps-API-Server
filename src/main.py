@@ -22,10 +22,13 @@ from src.minio_module import router as minio_router
 from src.minio_module.exceptions import MinIOException
 from src.mlflow_module import router as mlflow_router
 from src.mlflow_module.exceptions import MlflowException
+from src.response import Response
+from src.service import WorkflowPipelineService
 from src.version import get_version_info, write_version_py
 from src.workflow_generator_module import router as gen_pipeline_router
 from src.workflow_generator_module.exceptions import WorkflowGeneratorException
-from src.workflow_pipeline_module import router as pipeline_router
+from src.workflow_generator_module.schemas import PipelineInfo
+from src.workflow_pipeline_module import router as pipeline_router, workflow_pipeline_service
 from src.workflow_pipeline_module.exceptions import WorkflowPipelineException
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
@@ -205,6 +208,14 @@ async def info():
         "git_short_revision": GIT_SHORT_REVISION,
         "build_date": BUILD_DATE
     }
+
+
+workflow_pipeline_service = WorkflowPipelineService()
+
+
+@app.post("/workflow/pipeline", tags=["workflow"])
+async def custom_pipeline(pipeline_info: PipelineInfo):
+    return Response.from_result(workflow_pipeline_service.make_pipeline(pipeline_info))
 
 
 if __name__ == "__main__":

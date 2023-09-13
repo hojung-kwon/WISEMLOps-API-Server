@@ -12,5 +12,13 @@ engine = create_engine(
 # connect_args={"check_same_thread": False} : SQLite에서만 필요함. 타 DB연동시 connect_args={"check_same_thread": False} 제거
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
 workflow_pipeline_service = WorkflowPipelineService()
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
