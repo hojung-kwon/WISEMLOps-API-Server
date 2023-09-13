@@ -1,4 +1,5 @@
 import os
+
 import yaml
 
 
@@ -22,6 +23,3 @@ class Config:
         self.KUBEFLOW_PIPELINES_ENDPOINT = self._config['KUBEFLOW']['PIPELINES']['ENDPOINT']
         self.SQLALCHEMY_DATABASE_URL = self._config['DATABASE']['SQLALCHEMY_DATABASE_URL']
         pass
-
-
-    
