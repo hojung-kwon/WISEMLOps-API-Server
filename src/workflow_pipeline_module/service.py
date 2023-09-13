@@ -30,6 +30,7 @@ class WorkflowPipelineService:
 
             db_pipeline = models.Pipeline(pipeline_id=pipeline.pipeline_id, pipeline_name=pipeline.pipeline_name,
                                           pipeline_description=pipeline.pipeline_description, nodes=pipeline.nodes,
+                                          version_info=pipeline.version_info,
                                           edges=pipeline.edges, position=pipeline.position, zoom=pipeline.zoom,
                                           created_at=created_at, updated_at=updated_at)
             db.add(db_pipeline)

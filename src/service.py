@@ -41,7 +41,7 @@ class WorkflowPipelineService:
             pipeline_id = str(result.get('id'))
             pipeline_name = result.get('name')
             pipeline_description = result.get('description')
-            version_info = result.get('default_version')
+            version_info = json.loads(json.dumps(result.get('default_version'), default=pydantic_encoder))
 
             nodes = json.loads(json.dumps(pipeline_info.nodes, default=pydantic_encoder))
             edges = json.loads(json.dumps(pipeline_info.edges, default=pydantic_encoder))
