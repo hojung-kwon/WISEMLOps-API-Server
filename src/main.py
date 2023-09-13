@@ -28,7 +28,7 @@ from src.version import get_version_info, write_version_py
 from src.workflow_generator_module import router as gen_pipeline_router
 from src.workflow_generator_module.exceptions import WorkflowGeneratorException
 from src.workflow_generator_module.schemas import PipelineInfo
-from src.workflow_pipeline_module import router as pipeline_router, workflow_pipeline_service
+from src.workflow_pipeline_module import router as pipeline_router
 from src.workflow_pipeline_module.exceptions import WorkflowPipelineException
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
