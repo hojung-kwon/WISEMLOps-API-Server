@@ -1,5 +1,8 @@
 import json
+
 from starlette import status
+
+from src.workflow_pipeline_module.config import MODULE_CODE
 
 
 class WorkflowPipelineException(Exception):
@@ -17,9 +20,6 @@ class WorkflowPipelineException(Exception):
             "result": self.result
         }
         return json.dumps(exception_data, indent=4, ensure_ascii=False)
-
-
-MODULE_CODE = 700
 
 
 class PipelineNotFoundError(WorkflowPipelineException):

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.workflow_pipeline_module import SessionLocal, engine, workflow_pipeline_service
 from . import models
-from .pipeline_dto import PipelineDto
+from .schemas import PipelineDto
 from ..response import Response
 
 router = APIRouter(
