@@ -1,6 +1,9 @@
+import json
+
 from jinja2 import TemplateError
 from kfp_server_api import ApiException as KFPApiException
 from kubernetes.client import ApiException as KubernetesApiException
+from pydantic.json import pydantic_encoder
 from sqlalchemy.orm import Session
 
 from src.kfp_module import kfp_service
@@ -39,8 +42,9 @@ class WorkflowPipelineService:
             pipeline_name = result.get('name')
             pipeline_description = result.get('description')
             version_info = result.get('default_version')
-            nodes = pipeline_info.nodes
-            edges = pipeline_info.edges
+
+            nodes = json.loads(json.dumps(pipeline_info.nodes, default=pydantic_encoder))
+            edges = json.loads(json.dumps(pipeline_info.edges, default=pydantic_encoder))
             position = pipeline_info.position
             zoom = pipeline_info.zoom
 
