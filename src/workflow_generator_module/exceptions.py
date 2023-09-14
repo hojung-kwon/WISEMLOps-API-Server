@@ -26,3 +26,10 @@ class WorkflowTemplateError(WorkflowGeneratorException):
         self.code = int(f"{MODULE_CODE}{status.HTTP_400_BAD_REQUEST}")
         self.message = template_error.message
         self.result = template_error.args
+
+
+class RequestValidationError(WorkflowGeneratorException):
+    def __init__(self, message, result):
+        self.code = int(f"{MODULE_CODE}{status.HTTP_400_BAD_REQUEST}")
+        self.message = message
+        self.result = result

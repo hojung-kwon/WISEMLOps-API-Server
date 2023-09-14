@@ -1,8 +1,9 @@
 import re
 from typing import List, Dict, Optional
 
-from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, Field, validator
+
+from src.workflow_generator_module.exceptions import RequestValidationError
 
 
 class Pipeline(BaseModel):
@@ -192,7 +193,7 @@ class PipelineInfo(BaseModel):
         reg = re.compile(r'\W')
         if reg.match(v):
             raise RequestValidationError(
-                message=f"Only alphabetic characters, numbers, and underscores are allowed in the pipeline name.",
+                message="Only alphabetic characters, numbers, and underscores are allowed in the pipeline name.",
                 result={"current_name": v}
             )
         return v

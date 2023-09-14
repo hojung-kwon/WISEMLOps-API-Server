@@ -47,3 +47,10 @@ class PipelineCreateError(WorkflowPipelineException):
         self.code = int(f"{MODULE_CODE}{status.HTTP_500_INTERNAL_SERVER_ERROR}")
         self.message = f"CreatePipeline failed : {message}"
         self.result = {"current_pipeline": pipeline}
+
+
+class RequestValidationError(WorkflowPipelineException):
+    def __init__(self, message, result):
+        self.code = int(f"{MODULE_CODE}{status.HTTP_400_BAD_REQUEST}")
+        self.message = message
+        self.result = result
