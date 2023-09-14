@@ -4,14 +4,18 @@ import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Depends
+from fastapi.exceptions import RequestValidationError
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from starlette import status
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
 
 from src import app_config
-from src.exceptions import CustomHTTPError
+from src.exceptions import MLOpsAPIException
 from src.kfp_module import router as kfp_router
 from src.kfp_module.exceptions import KFPException
 from src.kserve_module import router as kserve_router
@@ -124,28 +128,53 @@ app.add_middleware(
 )
 
 
-@app.exception_handler(CustomHTTPError)
-async def badrequest_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=400,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": int(str(app_config.SERVICE_CODE) + str(exc.status_code)),
+            "message": f"{exc.detail}",
+            "result": {
+                "headers": exc.headers
+            }
+        }
+    )
 
 
-@app.exception_handler(CustomHTTPError)
-async def unauthorized_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=401,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": int(f"{app_config.SERVICE_CODE}{status.HTTP_422_UNPROCESSABLE_ENTITY}"),
+            "message": f"Invalid Request: {exc.errors()[0]['msg']} (type: {exc.errors()[0]['type']}), "
+                       f"Check {(exc.errors()[0]['loc'])}",
+            "result": {
+                "body": exc.body
+            }
+        }
+    )
 
 
-@app.exception_handler(CustomHTTPError)
-async def forbidden_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=403,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(ValidationError)
+async def request_validation_exception_handler(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": int(str(app_config.SERVICE_CODE) + str(status.HTTP_422_UNPROCESSABLE_ENTITY)),
+            "message": "pydantic model ValidationError 발생",
+            "result": {
+                "body": exc.errors()
+            }
+        }
+    )
 
 
-@app.exception_handler(CustomHTTPError)
-async def notfound_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=404,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(MLOpsAPIException)
+async def mlops_api_exception_handler(request: Request, exc: MLOpsAPIException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
 @app.exception_handler(WorkflowGeneratorException)
