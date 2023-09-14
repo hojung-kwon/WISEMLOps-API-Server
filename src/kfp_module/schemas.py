@@ -17,7 +17,7 @@ class Experiment(BaseModel):
         reg = re.compile(r'\W')
         if reg.match(v):
             raise RequestValidationError(
-                message=f"Only alphabetic characters, numbers, and underscores are allowed in the name.",
+                message="Only alphabetic characters, numbers, and underscores are allowed in the name.",
                 result={"current_name": v}
             )
         return v
@@ -38,7 +38,7 @@ class Pipeline(BaseModel):
         reg = re.compile(r'\W')
         if reg.match(v):
             raise RequestValidationError(
-                message=f"Only alphabetic characters, numbers, and underscores are allowed in the name.",
+                message="Only alphabetic characters, numbers, and underscores are allowed in the name.",
                 result={"current_name": v}
             )
         return v
@@ -62,7 +62,7 @@ class PipelineVersion(BaseModel):
         reg = re.compile(r'\W')
         if reg.match(v):
             raise RequestValidationError(
-                message=f"Only alphabetic characters, numbers, and underscores are allowed in the name.",
+                message="Only alphabetic characters, numbers, and underscores are allowed in the name.",
                 result={"current_name": v}
             )
         return v
@@ -102,7 +102,7 @@ class Run(BaseModel):
         reg = re.compile(r'\W')
         if reg.match(v):
             raise RequestValidationError(
-                message=f"Only alphabetic characters, numbers, and underscores are allowed in the name.",
+                message="Only alphabetic characters, numbers, and underscores are allowed in the name.",
                 result={"current_name": v}
             )
         return v
@@ -183,7 +183,7 @@ class RecurringRun(BaseModel):
         reg = re.compile(r'\W')
         if reg.match(v):
             raise RequestValidationError(
-                message=f"Only alphabetic characters, numbers, and underscores are allowed in the name.",
+                message="Only alphabetic characters, numbers, and underscores are allowed in the name.",
                 result={"current_name": v}
             )
         return v
