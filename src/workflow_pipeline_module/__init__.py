@@ -1,4 +1,3 @@
-from src.workflow_pipeline_module.config import get_sqlalchemy_database_url
 from src.workflow_pipeline_module.service import WorkflowPipelineService
 
 workflow_pipeline_service = WorkflowPipelineService()

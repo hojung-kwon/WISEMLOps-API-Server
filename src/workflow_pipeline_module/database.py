@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.workflow_pipeline_module import get_sqlalchemy_database_url, models
+from src.workflow_pipeline_module import models
+from src.workflow_pipeline_module.config import get_sqlalchemy_database_url
 
 engine = create_engine(
     get_sqlalchemy_database_url(), connect_args={"check_same_thread": False}
