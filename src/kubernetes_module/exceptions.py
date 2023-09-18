@@ -2,6 +2,8 @@ import json
 
 from kubernetes.client import ApiException
 
+from src.kubernetes_module.config import MODULE_CODE
+
 
 class KubernetesException(Exception):
     def __init__(self, code: int, message: str, result):
@@ -16,9 +18,6 @@ class KubernetesException(Exception):
             "result": self.result
         }
         return json.dumps(exception_data, indent=4, ensure_ascii=False)
-
-
-MODULE_CODE = 702
 
 
 class KubernetesApiError(KubernetesException):

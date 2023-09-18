@@ -3,14 +3,19 @@ import os
 import sys
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
+from fastapi.exceptions import RequestValidationError
 from loguru import logger
-from minio.error import MinioException
+from pydantic import ValidationError
+from sqlalchemy.orm import Session
+from starlette import status
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from uvicorn import Config, Server
 
-from src.exceptions import CustomHTTPError
+from src import app_config
+from src.exceptions import MLOpsAPIException
 from src.kfp_module import router as kfp_router
 from src.kfp_module.exceptions import KFPException
 from src.kserve_module import router as kserve_router
@@ -22,10 +27,14 @@ from src.minio_module import router as minio_router
 from src.minio_module.exceptions import MinIOException
 from src.mlflow_module import router as mlflow_router
 from src.mlflow_module.exceptions import MlflowException
+from src.response import Response
+from src.service import WorkflowPipelineService
 from src.version import get_version_info, write_version_py
 from src.workflow_generator_module import router as gen_pipeline_router
 from src.workflow_generator_module.exceptions import WorkflowGeneratorException
+from src.workflow_generator_module.schemas import PipelineInfo
 from src.workflow_pipeline_module import router as pipeline_router
+from src.workflow_pipeline_module.database import get_db
 from src.workflow_pipeline_module.exceptions import WorkflowPipelineException
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
@@ -119,28 +128,53 @@ app.add_middleware(
 )
 
 
-@app.exception_handler(CustomHTTPError)
-async def badrequest_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=400,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": int(str(app_config.SERVICE_CODE) + str(exc.status_code)),
+            "message": f"{exc.detail}",
+            "result": {
+                "headers": exc.headers
+            }
+        }
+    )
 
 
-@app.exception_handler(CustomHTTPError)
-async def unauthorized_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=401,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": int(f"{app_config.SERVICE_CODE}{status.HTTP_422_UNPROCESSABLE_ENTITY}"),
+            "message": f"Invalid Request: {exc.errors()[0]['msg']} (type: {exc.errors()[0]['type']}), "
+                       f"Check {(exc.errors()[0]['loc'])}",
+            "result": {
+                "body": exc.body
+            }
+        }
+    )
 
 
-@app.exception_handler(CustomHTTPError)
-async def forbidden_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=403,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(ValidationError)
+async def request_validation_exception_handler(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": int(str(app_config.SERVICE_CODE) + str(status.HTTP_422_UNPROCESSABLE_ENTITY)),
+            "message": "pydantic model ValidationError 발생",
+            "result": {
+                "body": exc.errors()
+            }
+        }
+    )
 
 
-@app.exception_handler(CustomHTTPError)
-async def notfound_handler(request: Request, exc: CustomHTTPError):
-    return JSONResponse(status_code=404,
-                        content={"code": exc.status_code, "message": f"{exc.detail}"})
+@app.exception_handler(MLOpsAPIException)
+async def mlops_api_exception_handler(request: Request, exc: MLOpsAPIException):
+    return JSONResponse(status_code=200,
+                        content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
 @app.exception_handler(WorkflowGeneratorException)
@@ -150,12 +184,12 @@ async def workflow_generator_exception_handler(request: Request, exc: WorkflowGe
 
 
 @app.exception_handler(WorkflowPipelineException)
-async def workflow_pipeline_exception_handler(request: Request, exc: WorkflowGeneratorException):
+async def workflow_pipeline_exception_handler(request: Request, exc: WorkflowPipelineException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})
 
 
-@app.exception_handler(MinioException)
+@app.exception_handler(MinIOException)
 async def minio_exception_handler(request: Request, exc: MinIOException):
     return JSONResponse(status_code=200,
                         content={"code": exc.code, "message": exc.message, "result": exc.result})
@@ -205,6 +239,14 @@ async def info():
         "git_short_revision": GIT_SHORT_REVISION,
         "build_date": BUILD_DATE
     }
+
+
+workflow_pipeline_service = WorkflowPipelineService()
+
+
+@app.post("/workflow/pipeline", tags=["workflow"])
+async def custom_pipeline(pipeline_info: PipelineInfo, db: Session = Depends(get_db)):
+    return Response.from_result(app_config.SERVICE_CODE, workflow_pipeline_service.make_pipeline(pipeline_info, db))
 
 
 if __name__ == "__main__":

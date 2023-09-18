@@ -8,9 +8,8 @@
 from typing import Annotated
 
 from fastapi import Header
-from starlette import status
 
-from src.exceptions import CustomHTTPError
+from src.exceptions import TokenValidationError, TokenProvisionError
 
 DEFAULT_X_TOKEN = "fake-super-secret-token"
 DEFAULT_TOKEN = "default-token"
@@ -18,9 +17,9 @@ DEFAULT_TOKEN = "default-token"
 
 async def get_token_header(x_token: Annotated[str, Header()]):
     if x_token != DEFAULT_X_TOKEN:
-        raise CustomHTTPError(status_code=status.HTTP_400_BAD_REQUEST, detail="X-Token header invalid")
+        raise TokenValidationError(x_token)
 
 
 async def get_query_token(token: str):
     if token != DEFAULT_TOKEN:
-        raise CustomHTTPError(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token provided")
+        raise TokenProvisionError(token)

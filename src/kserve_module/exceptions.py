@@ -4,6 +4,8 @@ from typing import Union
 from kserve import ApiException
 from mlflow import MlflowException
 
+from src.kserve_module.config import MODULE_CODE
+
 
 class KServeException(Exception):
     def __init__(self, code: int, message: str, result):
@@ -18,9 +20,6 @@ class KServeException(Exception):
             "result": self.result
         }
         return json.dumps(exception_data, indent=4, ensure_ascii=False)
-
-
-MODULE_CODE = 703
 
 
 class KServeApiError(KServeException):

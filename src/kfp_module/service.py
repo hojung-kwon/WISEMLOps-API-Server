@@ -9,18 +9,19 @@ from kfp_server_api.api import JobServiceApi, RunServiceApi, ExperimentServiceAp
     PipelineUploadServiceApi, HealthzServiceApi
 from kfp_server_api.api_client import ApiClient
 from kfp_server_api.configuration import Configuration
+from kubernetes import config, client
 from kubernetes.client import ApiException as KubernetesApiException
-from kubernetes.client import CoreV1Api, AuthenticationV1TokenRequest, V1ObjectMeta, V1TokenRequestSpec
+from kubernetes.client import AuthenticationV1TokenRequest, V1ObjectMeta, V1TokenRequestSpec
 
 from src.kfp_module.exceptions import KFPApiError
 from src.kfp_module.schemas import Experiment, Pipeline, PipelineVersion, Run, RecurringRun
 
 
 class KfpService:
-    def __init__(self, host, cluster_client: CoreV1Api, sa_name: str = 'default-editor',
+    def __init__(self, host, config_file, sa_name: str = 'default-editor',
                  namespace: str = 'kubeflow-user-example-com'):
+        config.load_kube_config(config_file=config_file)
         self.host = host
-        self.cluster_client = cluster_client
         self.sa_name = sa_name
         self.namespace = namespace
         self.token = None
@@ -38,10 +39,14 @@ class KfpService:
             return True
         return False
 
+    @staticmethod
+    def get_cluster_client():
+        return client.CoreV1Api()
+
     def get_token(self):
         try:
             if self.is_token_expired():
-                self.token = self.cluster_client. \
+                self.token = self.get_cluster_client(). \
                     create_namespaced_service_account_token(name=self.sa_name,
                                                             namespace=self.namespace,
                                                             body=AuthenticationV1TokenRequest(
@@ -67,11 +72,11 @@ class KfpService:
 
     def get_api_client(self):
         try:
-            config = Configuration()
-            config.host = self.host
-            config.api_key['authorization'] = self.get_token()
-            config.api_key_prefix['authorization'] = 'Bearer'
-            return ApiClient(config)
+            kfp_config = Configuration()
+            kfp_config.host = self.host
+            kfp_config.api_key['authorization'] = self.get_token()
+            kfp_config.api_key_prefix['authorization'] = 'Bearer'
+            return ApiClient(kfp_config)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 

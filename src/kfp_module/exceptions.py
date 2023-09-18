@@ -3,6 +3,9 @@ from typing import Union
 
 from kfp_server_api import ApiException as KFPApiException
 from kubernetes.client import ApiException as KubernetesApiException
+from starlette import status
+
+from src.kfp_module.config import MODULE_CODE
 
 
 class KFPException(Exception):
@@ -20,12 +23,16 @@ class KFPException(Exception):
         return json.dumps(exception_data, indent=4, ensure_ascii=False)
 
 
-MODULE_CODE = 701
-
-
 class KFPApiError(KFPException):
     def __init__(self, e: Union[KFPApiException, KubernetesApiException]):
         body = json.loads(e.body)
         self.code = int(f"{MODULE_CODE}{e.status}")
         self.message = e.reason
         self.result = body['message']
+
+
+class RequestValidationError(KFPException):
+    def __init__(self, message, result):
+        self.code = int(f"{MODULE_CODE}{status.HTTP_400_BAD_REQUEST}")
+        self.message = message
+        self.result = result

@@ -1,6 +1,9 @@
 import json
 
 from jinja2 import TemplateError
+from starlette import status
+
+from src.workflow_generator_module.config import MODULE_CODE
 
 
 class WorkflowGeneratorException(Exception):
@@ -20,6 +23,13 @@ class WorkflowGeneratorException(Exception):
 
 class WorkflowTemplateError(WorkflowGeneratorException):
     def __init__(self, template_error: TemplateError):
-        self.code = 400000
+        self.code = int(f"{MODULE_CODE}{status.HTTP_400_BAD_REQUEST}")
         self.message = template_error.message
         self.result = template_error.args
+
+
+class RequestValidationError(WorkflowGeneratorException):
+    def __init__(self, message, result):
+        self.code = int(f"{MODULE_CODE}{status.HTTP_400_BAD_REQUEST}")
+        self.message = message
+        self.result = result
