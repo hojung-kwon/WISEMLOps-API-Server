@@ -12,7 +12,7 @@ local:
     ACCESS_KEY: 'HoItKC9L7DkLjenn'
     SECRET_KEY: 'hVQN7JZWrtSvdpfST5Jxv9uXPVmHtGjK'
   MLFLOW:
-    TRACKING_URI: 'http://a66416857e07d4ad692b074494b68a36-2044209649.ap-northeast-2.elb.amazonaws.com:5000/'
+    TRACKING_URI: 'http://a66416857e07d4ad692b074494b68a36-2044209649.ap-northeast-2.elb.amazonaws.com:5000'
   DATABASE:
     SQLALCHEMY_DATABASE_URL: "sqlite:///./sql_app.db"
 
