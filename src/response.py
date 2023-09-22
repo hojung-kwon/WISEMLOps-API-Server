@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import Any
 
 from pydantic import BaseModel
 from starlette import status
@@ -12,8 +12,4 @@ class Response(BaseModel):
 
     @classmethod
     def from_result(cls, module_code, result):
-        if result is None:
-            return cls(code=int(f"{module_code}{status.HTTP_200_OK}"), result=[])
-        elif isinstance(result, List):
-            return cls(code=int(f"{module_code}{status.HTTP_200_OK}"), result=result)
-        return cls(code=int(f"{module_code}{status.HTTP_200_OK}"), result=[result])
+        return cls(code=int(f"{module_code}{status.HTTP_200_OK}"), result=result)
