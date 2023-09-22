@@ -116,17 +116,6 @@ app.include_router(kfp_router.router)
 app.include_router(gen_pipeline_router.router)
 app.include_router(pipeline_router.router)
 
-origins = [
-    "*"
-]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -248,6 +237,17 @@ workflow_pipeline_service = WorkflowPipelineService()
 async def custom_pipeline(pipeline_info: PipelineInfo, db: Session = Depends(get_db)):
     return Response.from_result(app_config.SERVICE_CODE, workflow_pipeline_service.make_pipeline(pipeline_info, db))
 
+
+origins = [
+    "*"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     server = Server(
