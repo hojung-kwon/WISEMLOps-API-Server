@@ -27,7 +27,7 @@ class WorkflowPipelineService:
             pipeline = pipeline_gen_service.make_kfp_pipeline_tar_gz(pipeline_info)
 
             if pipeline is None:
-                pass
+                raise PipelineCreateError(pipeline, 'cannot create pipeline')
         except TemplateError as te:
             raise WorkflowTemplateError(te)
 
