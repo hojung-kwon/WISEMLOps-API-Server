@@ -24,7 +24,7 @@ class WorkflowPipelineService:
     def make_pipeline(pipeline_info: PipelineInfo, db: Session):
         try:
             # workflow/kfp 호출, pipeline tar.gz 생성
-            pipeline = pipeline_gen_service.make_kfp_pipeline_tar_gz(pipeline_info)
+            pipeline = pipeline_gen_service.make_kfp_pipeline_yaml(pipeline_info)
 
             if pipeline is None:
                 raise PipelineCreateError(pipeline, 'cannot create pipeline')
@@ -39,10 +39,10 @@ class WorkflowPipelineService:
 
         try:
             # db save
-            pipeline_id = str(result.get('id'))
-            pipeline_name = result.get('name')
+            pipeline_id = str(result.get('pipeline_id'))
+            pipeline_name = result.get('display_name')
             pipeline_description = result.get('description')
-            version_info = json.loads(json.dumps(result.get('default_version'), default=pydantic_encoder))
+            # version_info = json.loads(json.dumps(result.get('default_version'), default=pydantic_encoder))
 
             nodes = json.loads(json.dumps(pipeline_info.nodes, default=pydantic_encoder))
             edges = json.loads(json.dumps(pipeline_info.edges, default=pydantic_encoder))
@@ -52,7 +52,7 @@ class WorkflowPipelineService:
             db_pipeline = PipelineDto(pipeline_id=pipeline_id,
                                       pipeline_name=pipeline_name,
                                       pipeline_description=pipeline_description,
-                                      version_info=version_info,
+                                      # version_info=version_info,
                                       nodes=nodes,
                                       edges=edges,
                                       position=position,

@@ -20,10 +20,10 @@ class PipelineDto(BaseModel):
         title="pipeline_description",
         description="파이프라인 설명"
     )
-    version_info: Optional[Dict] = Field(
-        title="version_info",
-        description="파이프라인의 버전 정보"
-    )
+    # version_info: Optional[Dict] = Field(
+    #     title="version_info",
+    #     description="파이프라인의 버전 정보"
+    # )
     nodes: List[Dict] = Field(
         title="nodes",
         description="파이프라인 노드 정보"

@@ -1,40 +1,257 @@
+import kfp
 from kfp import dsl
-from kubernetes import client
+from kfp.dsl import Output, Input, Artifact
+from kubernetes import client, config
+from kubernetes.client import AuthenticationV1TokenRequest, V1ObjectMeta, V1TokenRequestSpec
 
 
-{% if pipeline_description %}
-@dsl.pipeline(name="{{ pipeline_name }}", description="{{ pipeline_description | string_delimiter_safe }}")
+@dsl.component(base_image='python:3.9', packages_to_install=['scikit-learn', 'pandas'])
+def load_data(dataset_name: str, output: Output[Artifact]):
+    import pandas as pd
+    from sklearn.datasets import load_breast_cancer, load_diabetes, load_digits, load_iris, load_linnerud, load_wine
+
+    if dataset_name == "breast_cancer":
+        data = load_breast_cancer()
+    elif dataset_name == "diabetes":
+        data = load_diabetes()
+    elif dataset_name == "digits":
+        data = load_digits()
+    elif dataset_name == "iris":
+        data = load_iris()
+    elif dataset_name == "linnerud":
+        data = load_linnerud()
+    elif dataset_name == "wine":
+        data = load_wine()
+    else:
+        return None
+
+    features = data['data']
+    feature_names = data['feature_names']
+    labels = data['target']
+
+    df = pd.DataFrame(features, columns=feature_names)
+    df['target'] = labels
+
+    df.to_csv(output.path, columns=df.columns, index=False, encoding='utf-8')
+
+
+@dsl.component(base_image='python:3.9', packages_to_install=['mlflow', 'minio', 'scikit-learn', 'boto3'])
+def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
+                experiment_name: str, model_name: str, data: Input[Artifact],
+                mlflow_s3_endpoint_url: str = 'http://minio-service.kubeflow.svc.cluster.local:9000',
+                mlflow_tracking_uri: str = 'http://custom-mlflow-service.mlflow-system.svc.cluster.local:5000',
+                aws_access_key_id: str = 'minio',
+                aws_secret_access_key: str = 'minio123'):
+    import os
+    import mlflow
+    import pandas as pd
+
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.linear_model import LinearRegression, SGDRegressor
+    from sklearn.svm import SVR
+    from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = mlflow_s3_endpoint_url
+    os.environ['MLFLOW_TRACKING_URI'] = mlflow_tracking_uri
+    os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
+    os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
+
+    dataset = pd.read_csv(data.path)
+    print(dataset.head())
+    hp = hyper_parameter
+
+    feature_names = dataset.columns
+    feature_names.drop('target')
+
+    print(dataset[:5])
+
+    X = dataset[feature_names].to_numpy()
+    target = dataset['target'].to_numpy()
+
+    train_input, test_input, train_target, test_target = train_test_split(X, target, test_size=split_ratio)
+
+    ss = StandardScaler()
+    ss.fit(train_input)
+    train_scaled, test_scaled = ss.transform(train_input), ss.transform(test_input)
+
+    model = None
+    if algorithm == "decision_tree_classifier":
+        criterion = hp['dt_criterion']
+        max_depth = hp['dt_max_depth']
+        min_samples_split = hp['dt_min_samples_split']
+        min_samples_leaf = hp['dt_min_samples_leaf']
+
+        model = DecisionTreeClassifier(
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+        )
+    elif algorithm == "decision_tree_regressor":
+        criterion = hp['dt_criterion']
+        max_depth = hp['dt_max_depth']
+        min_samples_split = hp['dt_min_samples_split']
+        min_samples_leaf = hp['dt_min_samples_leaf']
+
+        model = DecisionTreeRegressor(
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+        )
+    elif algorithm == "linear_regression":
+        fit_intercept = hp['lr_fit_intercept']
+        copy_x = hp['lr_copy_X']
+        n_jobs = hp['lr_n_jobs']
+        positive = hp['lr_positive']
+
+        model = LinearRegression(
+            fit_intercept=fit_intercept,
+            copy_X=copy_x,
+            n_jobs=n_jobs,
+            positive=positive,
+        )
+    elif algorithm == "random_forest_classifier":
+        n_estimators = hp['rfc_n_estimators']
+        max_depth = hp['rfc_max_depth']
+        min_samples_split = hp['rfc_min_samples_split']
+        max_features = hp['rfc_max_features']
+
+        model = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            max_features=max_features,
+        )
+    elif algorithm == "sgd_regressor":
+        loss = hp['sgd_loss']
+        max_iter = hp['sgd_max_iter']
+        tol = hp['sgd_tol']
+        penalty = hp['sgd_penalty']
+        alpha = hp['sgd_alpha']
+
+        model = SGDRegressor(
+            loss=loss,
+            max_iter=max_iter,
+            tol=tol,
+            penalty=penalty,
+            alpha=alpha
+        )
+    elif algorithm == "sgd_regressor":
+        c = hp['svr_C']
+        kernel = hp['svr_kernel']
+        epsilon = hp['svr_epsilon']
+
+        model = SVR(
+            C=c,
+            kernel=kernel,
+            epsilon=epsilon
+        )
+
+    if model is not None:
+        model.fit(train_scaled, train_target)
+
+        train_acc = model.score(train_scaled, train_target)
+        valid_acc = model.score(test_scaled, test_target)
+
+        print("Train Accuracy :", train_acc)
+        print("Valid Accuracy :", valid_acc)
+
+        train_pred = model.predict(train_scaled)
+        signature = mlflow.models.signature.infer_signature(model_input=train_scaled, model_output=train_pred)
+        input_sample = train_scaled[:10]
+
+        # create a new experiment
+        if mlflow.get_experiment_by_name(experiment_name) is None:
+            mlflow.create_experiment(experiment_name)
+
+        # set experiment and tracking uri
+        mlflow.set_experiment(experiment_name)
+
+        with mlflow.start_run(run_name=model_name):
+            mlflow.log_metrics({"train_acc": train_acc, "valid_acc": valid_acc})
+            model_info = mlflow.sklearn.log_model(
+                sk_model=model,
+                artifact_path=model_name,
+                signature=signature,
+                input_example=input_sample,
+                registered_model_name=model_name
+            )
+
+
+@dsl.component(base_image='python:3.9', packages_to_install=['mlflow', 'boto3', 'kserve'])
+def serve_model(model_name: str, stages: str = None,
+                mlflow_s3_endpoint_url: str = 'http://minio-service.kubeflow.svc.cluster.local:9000',
+                mlflow_tracking_uri: str = 'http://custom-mlflow-service.mlflow-system.svc.cluster.local:5000',
+                aws_access_key_id: str = 'minio',
+                aws_secret_access_key: str = 'minio123'):
+    import os
+    from mlflow import MlflowClient
+    from kubernetes.client import V1ObjectMeta
+
+    from kserve import V1beta1InferenceServiceSpec, V1beta1PredictorSpec, V1beta1ModelSpec, V1beta1ModelFormat, \
+        V1beta1InferenceService, constants, KServeClient
+
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = mlflow_s3_endpoint_url
+    os.environ['MLFLOW_TRACKING_URI'] = mlflow_tracking_uri
+    os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
+    os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
+
+    model_format: str = 'mlflow'
+    protocol_version: str = 'v2'
+    namespace = 'kubeflow-user-example-com'
+    service_account_name = 'default-editor'
+
+    stage_list = None
+    if stages:
+        stage_list = stages.split(",")
+    latest_model_versions = MlflowClient().get_latest_versions(model_name, stages=stage_list)
+
+    if len(latest_model_versions) > 0:
+        storage_uri = latest_model_versions[-1].source
+
+        default_model_spec = V1beta1InferenceServiceSpec(
+            predictor=V1beta1PredictorSpec(
+                service_account_name=service_account_name,
+                model=V1beta1ModelSpec(
+                    model_format=V1beta1ModelFormat(name=model_format),
+                    protocol_version=protocol_version,
+                    storage_uri=storage_uri)
+            )
+        )
+
+        i_svc = V1beta1InferenceService(api_version=constants.KSERVE_V1BETA1,
+                                        kind=constants.KSERVE_KIND,
+                                        metadata=V1ObjectMeta(name=model_name, namespace=namespace,
+                                                              annotations={'sidecar.istio.io/inject': 'false'}),
+                                        spec=default_model_spec)
+
+        if i_svc is not None:
+            KServeClient().create(i_svc, namespace=namespace)
+
+
+{% if pipeline_info.pipeline_description %}
+@dsl.pipeline(name="{{ pipeline_info.pipeline_name }}", description="{{ pipeline_info.pipeline_description | string_delimiter_safe }}")
 {% else %}
-@dsl.pipeline(name="{{ pipeline_name }}")
+@dsl.pipeline(name="{{ pipeline_info.pipeline_name }}")
 {% endif %}
-def generated_pipeline(
+def pipeline_func(
 ):
-    dsl.get_pipeline_conf().set_image_pull_secrets([client.V1LocalObjectReference(name="regcred")])
-    dsl.get_pipeline_conf().set_image_pull_policy('Always')
-
 {% for node in pipeline_info.nodes %}
-    task_{{ node.id }} = dsl.ContainerOp(
-        name='{{ node.label }}',
-        image='{{ node.data.attribute.image }}',
-    {% if node.data.attribute.args %}
-        arguments='{{ node.data.attribute.args }}'.split(),
-    {% endif %}
-    {% if node.data.attribute.command %}
-        command='{{ node.data.attribute.command }}'.split(),
-    {% else %}
-        command=["python", "main.py"],
-    {% endif %}
-    )
-    {% if env_variables %}
-        {% for env_key, env_value in env_variables.items() %}
-            {% for value_key, value in env_value.items() %}
-                {% if value_key == 'value' %}
-    task_{{ node.id }}.add_env_variable(client.V1EnvVar(name='{{ env_key }}', {{ value_key }}='{{ value }}'))
-                {% elif value_key == 'value_from' %}
-    task_{{ node.id }}.add_env_variable(client.V1EnvVar(name='{{ env_key }}', {{ value_key }}={{ value }}))
-                {% endif %}
-            {% endfor %}
-        {% endfor %}
+    {% if node.data.attribute.type == 'load_data' %}
+    task_{{ node.id }} = load_data(dataset_name='{{ node.data.attribute.dataset_name }}')
+    task_output = task_{{ node.id }}.output
+    {% elif node.data.attribute.type == 'train_model' %}
+    task_{{ node.id }} = train_model(algorithm='{{ node.data.attribute.algorithm }}',
+                                     hyper_parameter={{ node.data.attribute.hyper_parameter }},
+                                     split_ratio={{ node.data.attribute.split_ratio }},
+                                     experiment_name='{{ node.data.attribute.experiment_name }}',
+                                     model_name='{{ node.data.attribute.model_name }}',
+                                     data=task_output)
+    {% elif node.data.attribute.type == 'serve_model' %}
+    task_{{ node.id }} = serve_model(model_name='{{ node.data.attribute.model_name }}')
     {% endif %}
 {% endfor %}
 {% for edge in pipeline_info.edges %}
@@ -44,8 +261,8 @@ def generated_pipeline(
 
 if __name__ == "__main__":
     import kfp.compiler as compiler
-{% if tar_file %}
-    compiler.Compiler().compile(generated_pipeline, '{{ tar_file }}')
+{% if yaml_file %}
+    compiler.Compiler().compile(pipeline_func, '{{ yaml_file }}')
 {% else %}
-    compiler.Compiler().compile(generated_pipeline, __file__ + '.tar.gz')
+    compiler.Compiler().compile(pipeline_func, __file__ + '.yaml')
 {% endif %}
