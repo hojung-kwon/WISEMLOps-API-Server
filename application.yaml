@@ -1,0 +1,35 @@
+local:
+  CLUSTER:
+    HOST: 'https://E203283227F6D91EA3CD8E07B9406FBC.yl4.ap-northeast-2.eks.amazonaws.com:6443'
+    KUBE_CONFIG_PATH: 'D:\PycharmProjects\MLOps-API\certs\kubeconfig'
+    VOLUME_NFS_SERVER: 'E203283227F6D91EA3CD8E07B9406FBC.yl4.ap-northeast-2.eks.amazonaws.com'
+    VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
+  KUBEFLOW:
+    PIPELINES:
+      ENDPOINT: 'http://a03ac6de483de4038bf65cd376790a4a-212128700.ap-northeast-2.elb.amazonaws.com:8888'
+  MINIO:
+    ENDPOINT: 'http://a6809714dd8d2408ab6a24dc11449424-1586112037.ap-northeast-2.elb.amazonaws.com:9000'
+    ACCESS_KEY: 'minio'
+    SECRET_KEY: 'minio123'
+  MLFLOW:
+    TRACKING_URI: 'http://a5a1f4ae6c50a4f7a840a20a7be4071c-2012444682.ap-northeast-2.elb.amazonaws.com:5000'
+  DATABASE:
+    SQLALCHEMY_DATABASE_URL: "sqlite:///./sql_app.db"
+
+container:
+  CLUSTER:
+    HOST: 'https://E203283227F6D91EA3CD8E07B9406FBC.yl4.ap-northeast-2.eks.amazonaws.com:6443'
+    KUBE_CONFIG_PATH: '/home/wisenut/app/certs/kubeconfig'
+    VOLUME_NFS_SERVER: 'E203283227F6D91EA3CD8E07B9406FBC.yl4.ap-northeast-2.eks.amazonaws.com'
+    VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
+  KUBEFLOW:
+    PIPELINES:
+      ENDPOINT: 'http://ml-pipeline.kubeflow.svc.cluster.local:8888'
+  MINIO:
+    ENDPOINT: 'http://minio-service.kubeflow.svc.cluster.local:9000'
+    ACCESS_KEY: 'minio'
+    SECRET_KEY: 'minio123'
+  MLFLOW:
+    TRACKING_URI: 'http://custom-mlflow-service.mlflow-system.svc.cluster.local:5000'
+  DATABASE:
+    SQLALCHEMY_DATABASE_URL: "sqlite:///./sql_app.db"
