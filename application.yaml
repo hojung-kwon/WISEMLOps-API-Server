@@ -12,7 +12,7 @@ local:
     ACCESS_KEY: 'minio'
     SECRET_KEY: 'minio123'
   MLFLOW:
-    TRACKING_URI: 'http://a5a1f4ae6c50a4f7a840a20a7be4071c-2012444682.ap-northeast-2.elb.amazonaws.com:5000'
+    TRACKING_URI: 'http://acaa02f4e4c97433586e4dde141b6e2e-317540919.ap-northeast-2.elb.amazonaws.com:5000'
   DATABASE:
     SQLALCHEMY_DATABASE_URL: "sqlite:///./sql_app.db"
 
