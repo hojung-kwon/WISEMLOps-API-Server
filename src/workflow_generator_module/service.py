@@ -1,5 +1,5 @@
 import os.path
-from typing import Dict, Optional
+from typing import Optional
 
 from jinja2 import Template, TemplateError
 
@@ -9,15 +9,31 @@ from src.workflow_generator_module.utils import get_workflow_name, get_workflow_
 
 
 class PipelineGenService:
-    def __init__(self, kfp_template: Template, airflow_template: Template, env_variables: Dict):
+    def __init__(self, kfp_template: Template, airflow_template: Template,
+                 mlflow_s3_endpoint_url: str,
+                 mlflow_tracking_uri: str,
+                 aws_access_key_id: str,
+                 aws_secret_access_key: str):
         self.kfp_template = kfp_template
         self.airflow_template = airflow_template
-        self.env_variables = env_variables
+        self.mlflow_s3_endpoint_url = mlflow_s3_endpoint_url
+        self.mlflow_tracking_uri = mlflow_tracking_uri
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
 
     def _get_rendered_kfp_pipeline_dsl(self, pipeline_info: PipelineInfo, yaml_file: Optional[str] = None):
         pipeline_dsl = self.kfp_template.render(
             pipeline_info=pipeline_info,
             yaml_file=yaml_file,
+            mlflow_s3_endpoint_url=self.mlflow_s3_endpoint_url,
+            mlflow_tracking_uri=self.mlflow_tracking_uri,
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key
+            # mlflow_s3_endpoint_url='http://minio-service.kubeflow.svc.cluster.local:9000',
+            # mlflow_tracking_uri='http://custom-mlflow-service.mlflow-system.svc.cluster.local:5000',
+            # aws_access_key_id='minio',
+            # aws_secret_access_key='minio123'
+
         )
         return pipeline_dsl
 

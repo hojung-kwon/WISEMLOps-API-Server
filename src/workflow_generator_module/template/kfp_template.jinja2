@@ -37,11 +37,7 @@ def load_data(dataset_name: str, output: Output[Artifact]):
 
 @dsl.component(base_image='python:3.9', packages_to_install=['mlflow', 'minio', 'scikit-learn', 'boto3'])
 def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
-                experiment_name: str, model_name: str, data: Input[Artifact],
-                mlflow_s3_endpoint_url: str = 'http://minio-service.kubeflow.svc.cluster.local:9000',
-                mlflow_tracking_uri: str = 'http://custom-mlflow-service.mlflow-system.svc.cluster.local:5000',
-                aws_access_key_id: str = 'minio',
-                aws_secret_access_key: str = 'minio123'):
+                experiment_name: str, model_name: str, data: Input[Artifact]):
     import os
     import mlflow
     import pandas as pd
@@ -53,10 +49,10 @@ def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
     from sklearn.svm import SVR
     from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-    os.environ['MLFLOW_S3_ENDPOINT_URL'] = mlflow_s3_endpoint_url
-    os.environ['MLFLOW_TRACKING_URI'] = mlflow_tracking_uri
-    os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
-    os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = '{{ mlflow_s3_endpoint_url }}'
+    os.environ['MLFLOW_TRACKING_URI'] = '{{ mlflow_tracking_uri }}'
+    os.environ['AWS_ACCESS_KEY_ID'] = '{{ aws_access_key_id }}'
+    os.environ['AWS_SECRET_ACCESS_KEY'] = '{{ aws_secret_access_key }}'
 
     dataset = pd.read_csv(data.path)
     print(dataset.head())
@@ -182,11 +178,7 @@ def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
 
 
 @dsl.component(base_image='python:3.9', packages_to_install=['mlflow', 'boto3', 'kserve'])
-def serve_model(model_name: str, stages: str = None,
-                mlflow_s3_endpoint_url: str = 'http://minio-service.kubeflow.svc.cluster.local:9000',
-                mlflow_tracking_uri: str = 'http://custom-mlflow-service.mlflow-system.svc.cluster.local:5000',
-                aws_access_key_id: str = 'minio',
-                aws_secret_access_key: str = 'minio123'):
+def serve_model(model_name: str, stages: str = None):
     import os
     from mlflow import MlflowClient
     from kubernetes.client import V1ObjectMeta
@@ -194,10 +186,10 @@ def serve_model(model_name: str, stages: str = None,
     from kserve import V1beta1InferenceServiceSpec, V1beta1PredictorSpec, V1beta1ModelSpec, V1beta1ModelFormat, \
         V1beta1InferenceService, constants, KServeClient
 
-    os.environ['MLFLOW_S3_ENDPOINT_URL'] = mlflow_s3_endpoint_url
-    os.environ['MLFLOW_TRACKING_URI'] = mlflow_tracking_uri
-    os.environ['AWS_ACCESS_KEY_ID'] = aws_access_key_id
-    os.environ['AWS_SECRET_ACCESS_KEY'] = aws_secret_access_key
+    os.environ['MLFLOW_S3_ENDPOINT_URL'] = '{{ mlflow_s3_endpoint_url }}'
+    os.environ['MLFLOW_TRACKING_URI'] = '{{ mlflow_tracking_uri }}'
+    os.environ['AWS_ACCESS_KEY_ID'] = '{{ aws_access_key_id }}'
+    os.environ['AWS_SECRET_ACCESS_KEY'] = '{{ aws_secret_access_key }}'
 
     model_format: str = 'mlflow'
     protocol_version: str = 'v2'
