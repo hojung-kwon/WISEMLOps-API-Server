@@ -1,43 +1,37 @@
-import kfp
 from kfp import dsl
-from kfp.dsl import Output, Input, Artifact
-from kubernetes import client, config
-from kubernetes.client import AuthenticationV1TokenRequest, V1ObjectMeta, V1TokenRequestSpec
+from kfp.dsl import Output, Input, Dataset
 
 
-@dsl.component(base_image='python:3.9', packages_to_install=['scikit-learn', 'pandas'])
-def load_data(dataset_name: str, output: Output[Artifact]):
-    import pandas as pd
+@dsl.component(base_image='python:3.8', packages_to_install=['scikit-learn', 'pandas'])
+def load_data(dataset_name: str, output_data: Output[Dataset], output_target: Output[Dataset]):
     from sklearn.datasets import load_breast_cancer, load_diabetes, load_digits, load_iris, load_linnerud, load_wine
 
     if dataset_name == "breast_cancer":
-        data = load_breast_cancer()
+        dataset = load_breast_cancer(as_frame=True)
     elif dataset_name == "diabetes":
-        data = load_diabetes()
+        dataset = load_diabetes(as_frame=True)
     elif dataset_name == "digits":
-        data = load_digits()
+        dataset = load_digits(as_frame=True)
     elif dataset_name == "iris":
-        data = load_iris()
+        dataset = load_iris(as_frame=True)
     elif dataset_name == "linnerud":
-        data = load_linnerud()
+        dataset = load_linnerud(as_frame=True)
     elif dataset_name == "wine":
-        data = load_wine()
+        dataset = load_wine(as_frame=True)
     else:
         return None
 
-    features = data['data']
-    feature_names = data['feature_names']
-    labels = data['target']
+    data = dataset['data']
+    data.to_csv(output_data.path, index=False, encoding='utf-8')
 
-    df = pd.DataFrame(features, columns=feature_names)
-    df['target'] = labels
-
-    df.to_csv(output.path, columns=df.columns, index=False, encoding='utf-8')
+    target = dataset['target']
+    target.to_csv(output_target.path, index=False, encoding='utf-8')
 
 
-@dsl.component(base_image='python:3.9', packages_to_install=['mlflow', 'minio', 'scikit-learn', 'boto3'])
+@dsl.component(base_image='python:3.8',
+               packages_to_install=['mlflow==2.7.1', 'scikit-learn', 'boto3'])
 def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
-                experiment_name: str, model_name: str, data: Input[Artifact]):
+                experiment_name: str, model_name: str, input_data: Input[Dataset], input_target: Input[Dataset]):
     import os
     import mlflow
     import pandas as pd
@@ -54,23 +48,7 @@ def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
     os.environ['AWS_ACCESS_KEY_ID'] = '{{ aws_access_key_id }}'
     os.environ['AWS_SECRET_ACCESS_KEY'] = '{{ aws_secret_access_key }}'
 
-    dataset = pd.read_csv(data.path)
-    print(dataset.head())
     hp = hyper_parameter
-
-    feature_names = dataset.columns
-    feature_names.drop('target')
-
-    print(dataset[:5])
-
-    X = dataset[feature_names].to_numpy()
-    target = dataset['target'].to_numpy()
-
-    train_input, test_input, train_target, test_target = train_test_split(X, target, test_size=split_ratio)
-
-    ss = StandardScaler()
-    ss.fit(train_input)
-    train_scaled, test_scaled = ss.transform(train_input), ss.transform(test_input)
 
     model = None
     if algorithm == "decision_tree_classifier":
@@ -135,7 +113,7 @@ def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
             penalty=penalty,
             alpha=alpha
         )
-    elif algorithm == "sgd_regressor":
+    elif algorithm == "sv_regressor":
         c = hp['svr_C']
         kernel = hp['svr_kernel']
         epsilon = hp['svr_epsilon']
@@ -147,37 +125,32 @@ def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
         )
 
     if model is not None:
-        model.fit(train_scaled, train_target)
-
-        train_acc = model.score(train_scaled, train_target)
-        valid_acc = model.score(test_scaled, test_target)
-
-        print("Train Accuracy :", train_acc)
-        print("Valid Accuracy :", valid_acc)
-
-        train_pred = model.predict(train_scaled)
-        signature = mlflow.models.signature.infer_signature(model_input=train_scaled, model_output=train_pred)
-        input_sample = train_scaled[:10]
-
         # create a new experiment
         if mlflow.get_experiment_by_name(experiment_name) is None:
             mlflow.create_experiment(experiment_name)
 
         # set experiment and tracking uri
         mlflow.set_experiment(experiment_name)
+        mlflow.autolog()
 
         with mlflow.start_run(run_name=model_name):
-            mlflow.log_metrics({"train_acc": train_acc, "valid_acc": valid_acc})
-            model_info = mlflow.sklearn.log_model(
-                sk_model=model,
-                artifact_path=model_name,
-                signature=signature,
-                input_example=input_sample,
-                registered_model_name=model_name
-            )
+            input_csv = pd.read_csv(input_data.path)
+            target_csv = pd.read_csv(input_target.path)
+            X = input_csv.to_numpy()
+            target = target_csv.to_numpy()
+
+            train_input, test_input, train_target, test_target = train_test_split(X, target, test_size=split_ratio)
+            mlflow.log_input(mlflow.data.from_pandas(input_csv), context="data")
+            mlflow.log_input(mlflow.data.from_pandas(target_csv), context="target")
+
+            ss = StandardScaler()
+            ss.fit(train_input)
+            train_scaled, test_scaled = ss.transform(train_input), ss.transform(test_input)
+
+            model.fit(train_scaled, train_target)
 
 
-@dsl.component(base_image='python:3.9', packages_to_install=['mlflow', 'boto3', 'kserve'])
+@dsl.component(base_image='python:3.8', packages_to_install=['mlflow==2.3.1', 'boto3', 'kserve'])
 def serve_model(model_name: str, stages: str = None):
     import os
     from mlflow import MlflowClient
@@ -194,7 +167,7 @@ def serve_model(model_name: str, stages: str = None):
     model_format: str = 'mlflow'
     protocol_version: str = 'v2'
     namespace = 'kubeflow-user-example-com'
-    service_account_name = 'default-editor'
+    service_account_name = 'kserve-sa'
 
     stage_list = None
     if stages:
@@ -234,14 +207,15 @@ def pipeline_func(
 {% for node in pipeline_info.nodes %}
     {% if node.data.attribute.type == 'load_data' %}
     task_{{ node.id }} = load_data(dataset_name='{{ node.data.attribute.dataset_name }}')
-    task_output = task_{{ node.id }}.output
+    task_outputs = task_{{ node.id }}.outputs
     {% elif node.data.attribute.type == 'train_model' %}
     task_{{ node.id }} = train_model(algorithm='{{ node.data.attribute.algorithm }}',
                                      hyper_parameter={{ node.data.attribute.hyper_parameter }},
                                      split_ratio={{ node.data.attribute.split_ratio }},
                                      experiment_name='{{ node.data.attribute.experiment_name }}',
                                      model_name='{{ node.data.attribute.model_name }}',
-                                     data=task_output)
+                                     input_data=task_outputs['output_data'],
+                                     input_target=task_outputs['output_target'])
     {% elif node.data.attribute.type == 'serve_model' %}
     task_{{ node.id }} = serve_model(model_name='{{ node.data.attribute.model_name }}')
     {% endif %}
