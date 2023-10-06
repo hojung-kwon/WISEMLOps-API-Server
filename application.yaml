@@ -6,13 +6,13 @@ local:
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
   KUBEFLOW:
     PIPELINES:
-      ENDPOINT: 'http://a03ac6de483de4038bf65cd376790a4a-212128700.ap-northeast-2.elb.amazonaws.com:8888'
+      ENDPOINT: 'http://a8580289d049e4af8b91a26458a53c55-1063763824.ap-northeast-2.elb.amazonaws.com:8888'
   MINIO:
-    ENDPOINT: 'http://a6809714dd8d2408ab6a24dc11449424-1586112037.ap-northeast-2.elb.amazonaws.com:9000'
+    ENDPOINT: 'http://a966724d776b642698b266680d8596be-786556784.ap-northeast-2.elb.amazonaws.com:9000'
     ACCESS_KEY: 'minio'
     SECRET_KEY: 'minio123'
   MLFLOW:
-    TRACKING_URI: 'http://acaa02f4e4c97433586e4dde141b6e2e-317540919.ap-northeast-2.elb.amazonaws.com:5000'
+    TRACKING_URI: 'http://a09372fc6e31b45f6a1010205f9af2fc-583432073.ap-northeast-2.elb.amazonaws.com:5000'
   DATABASE:
     SQLALCHEMY_DATABASE_URL: "sqlite:///./sql_app.db"
 
