@@ -1,9 +1,12 @@
+from typing import List
+
 from kfp import dsl
 from kfp.dsl import Output, Input, Dataset
 
 
-@dsl.component(base_image='python:3.8', packages_to_install=['scikit-learn', 'pandas'])
-def load_data(dataset_name: str, output_data: Output[Dataset], output_target: Output[Dataset]):
+@dsl.component(base_image='python:3.8', packages_to_install=['scikit-learn==1.2.2', 'pandas'])
+def load_data(dataset_name: str, output_data: Output[Dataset]):
+    import pandas as pd
     from sklearn.datasets import load_breast_cancer, load_diabetes, load_digits, load_iris, load_linnerud, load_wine
 
     if dataset_name == "breast_cancer":
@@ -22,16 +25,20 @@ def load_data(dataset_name: str, output_data: Output[Dataset], output_target: Ou
         return None
 
     data = dataset['data']
-    data.to_csv(output_data.path, index=False, encoding='utf-8')
-
     target = dataset['target']
-    target.to_csv(output_target.path, index=False, encoding='utf-8')
+    if isinstance(target, pd.DataFrame):
+        data = pd.concat([data, target], axis=1)
+    else:
+        data['target'] = target
+
+    data.to_csv(output_data.path, index=False, encoding='utf-8')
 
 
 @dsl.component(base_image='python:3.8',
-               packages_to_install=['mlflow==2.7.1', 'scikit-learn', 'boto3'])
+               packages_to_install=['mlflow==2.3.1', 'scikit-learn==1.2.2', 'boto3'])
 def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
-                experiment_name: str, model_name: str, input_data: Input[Dataset], input_target: Input[Dataset]):
+                experiment_name: str, model_name: str, input_data: Input[Dataset],
+                input_columns: List[str] = None, target_column: str = None):
     import os
     import mlflow
     import pandas as pd
@@ -131,23 +138,41 @@ def train_model(algorithm: str, hyper_parameter: dict, split_ratio: float,
 
         # set experiment and tracking uri
         mlflow.set_experiment(experiment_name)
-        mlflow.autolog()
+        mlflow.autolog(log_models=False)
 
         with mlflow.start_run(run_name=model_name):
-            input_csv = pd.read_csv(input_data.path)
-            target_csv = pd.read_csv(input_target.path)
-            X = input_csv.to_numpy()
-            target = target_csv.to_numpy()
+            data = pd.read_csv(input_data.path)
+            if target_column is None or target_column.strip() == "":
+                target_column = "target"
+            target = data[target_column].to_numpy()
+
+            columns = data.columns.to_list()
+            columns.remove(target_column)
+
+            if input_columns is None or len(input_columns) < 1:
+                X = data[columns].to_numpy()
+            else:
+                X = data[input_columns].to_numpy()
 
             train_input, test_input, train_target, test_target = train_test_split(X, target, test_size=split_ratio)
-            mlflow.log_input(mlflow.data.from_pandas(input_csv), context="data")
-            mlflow.log_input(mlflow.data.from_pandas(target_csv), context="target")
 
             ss = StandardScaler()
             ss.fit(train_input)
             train_scaled, test_scaled = ss.transform(train_input), ss.transform(test_input)
 
             model.fit(train_scaled, train_target)
+
+            test_pred = model.predict(test_scaled)
+            signature = mlflow.models.signature.infer_signature(model_input=test_scaled, model_output=test_pred)
+            input_sample = test_scaled[:10]
+
+            mlflow.sklearn.log_model(
+                sk_model=model,
+                artifact_path=model_name,
+                signature=signature,
+                input_example=input_sample,
+                registered_model_name=model_name
+            )
 
 
 @dsl.component(base_image='python:3.8', packages_to_install=['mlflow==2.3.1', 'boto3', 'kserve'])
@@ -214,8 +239,13 @@ def pipeline_func(
                                      split_ratio={{ node.data.attribute.split_ratio }},
                                      experiment_name='{{ node.data.attribute.experiment_name }}',
                                      model_name='{{ node.data.attribute.model_name }}',
-                                     input_data=task_outputs['output_data'],
-                                     input_target=task_outputs['output_target'])
+        {% if node.data.attribute.input_columns %}
+                                     input_columns={{ node.data.attribute.input_columns }},
+        {% endif %}
+        {% if node.data.attribute.target_column %}
+                                     target_column='{{ node.data.attribute.target_column }}',
+        {% endif %}
+                                     input_data=task_outputs['output_data'])
     {% elif node.data.attribute.type == 'serve_model' %}
     task_{{ node.id }} = serve_model(model_name='{{ node.data.attribute.model_name }}')
     {% endif %}
