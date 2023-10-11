@@ -277,7 +277,8 @@ class KfpService:
         try:
             return self.get_kfp_client().list_recurring_runs(page_token=page_token, page_size=page_size,
                                                              sort_by=sort_by,
-                                                             experiment_id=experiment_id).to_dict()
+                                                             experiment_id=experiment_id,
+                                                             namespace=self.namespace).to_dict()
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
