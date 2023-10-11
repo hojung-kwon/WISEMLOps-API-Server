@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
@@ -24,8 +26,10 @@ async def get_user_namespace():
 
 
 @router.get("/experiments", tags=["kfp"], response_model=Response)
-async def list_experiments():
-    return Response.from_result(MODULE_CODE, kfp_service.list_experiments())
+async def list_experiments(page_token: str = '', page_size: int = 10, sort_by: str = ''):
+    return Response.from_result(MODULE_CODE, kfp_service.list_experiments(page_token=page_token,
+                                                                          page_size=page_size,
+                                                                          sort_by=sort_by))
 
 
 @router.post("/experiments", tags=["kfp"], response_model=Response)
@@ -49,8 +53,10 @@ async def delete_experiment(experiment_id: str):
 
 
 @router.get("/pipelines", tags=["kfp"], response_model=Response)
-async def list_pipelines():
-    return Response.from_result(MODULE_CODE, kfp_service.list_pipelines())
+async def list_pipelines(page_token: str = '', page_size: int = 10, sort_by: str = ''):
+    return Response.from_result(MODULE_CODE, kfp_service.list_pipelines(page_token=page_token,
+                                                                        page_size=page_size,
+                                                                        sort_by=sort_by))
 
 
 @router.post("/pipelines", tags=["kfp"], response_model=Response)
@@ -104,8 +110,11 @@ async def delete_pipeline_version(version_id: str):
 
 
 @router.get("/runs", tags=["kfp"], response_model=Response)
-async def list_runs():
-    return Response.from_result(MODULE_CODE, kfp_service.list_runs())
+async def list_runs(page_token: str = '', page_size: int = 10, sort_by: str = '', experiment_id: Optional[str] = None):
+    return Response.from_result(MODULE_CODE, kfp_service.list_runs(page_token=page_token,
+                                                                   page_size=page_size,
+                                                                   sort_by=sort_by,
+                                                                   experiment_id=experiment_id))
 
 
 @router.post("/runs", tags=["kfp"], response_model=Response)
@@ -124,8 +133,12 @@ async def wait_for_run_completion(run_id: str, timeout: int):
 
 
 @router.get("/recurring-runs", tags=["kfp"], response_model=Response)
-async def list_recurring_runs():
-    return Response.from_result(MODULE_CODE, kfp_service.list_recurring_runs())
+async def list_recurring_runs(page_token: str = '', page_size: int = 10, sort_by: str = '',
+                              experiment_id: Optional[str] = None):
+    return Response.from_result(MODULE_CODE, kfp_service.list_recurring_runs(page_token=page_token,
+                                                                             page_size=page_size,
+                                                                             sort_by=sort_by,
+                                                                             experiment_id=experiment_id))
 
 
 @router.post("/recurring-runs", tags=["kfp"], response_model=Response)
