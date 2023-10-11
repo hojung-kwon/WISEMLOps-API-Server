@@ -7,7 +7,7 @@ class Render:
     @staticmethod
     def _to_status_list(model, to_each_shape: callable):
         result = []
-        for item in model.items:
+        for item in model['items']:
             result.append(to_each_shape(item))
         return result
 
