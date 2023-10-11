@@ -82,8 +82,10 @@ class Render:
             "max_cpu": _notebook['resources']['limits']['cpu'],
             "min_memory": _notebook['resources']['requests']['memory'],
             "max_memory": _notebook['resources']['limits']['memory'],
-            "min_gpu": _notebook['resources']['requests']['nvidia.com/gpu'],
-            "max_gpu": _notebook['resources']['limits']['nvidia.com/gpu'],
+            "min_gpu": _notebook['resources']['requests']['nvidia.com/gpu']
+            if 'nvidia.com/gpu' in _notebook['resources']['requests'].keys() else None,
+            "max_gpu": _notebook['resources']['limits']['nvidia.com/gpu']
+            if 'nvidia.com/gpu' in _notebook['resources']['limits'].keys() else None,
             "create_date": metadata.create_date,
             "volumes": volumes,
             "conditions": conditions,
