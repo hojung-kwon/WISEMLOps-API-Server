@@ -8,6 +8,6 @@ class InferenceServiceInfo(BaseModel):
     namespace: str
     storage_uri: Optional[str] = None
     model_name: Optional[str] = None
-    service_account_name: str = 'minio30sa'
+    service_account_name: str = 'kserve-sa'
     model_format: str = 'mlflow'
-    protocol_version: str = 'v1'
+    protocol_version: str = 'v2'

@@ -39,16 +39,12 @@ class KServeService:
             raise KServeApiError(e)
 
     def create_inference_service_info(self, name: str, namespace: str, storage_uri: Optional[str] = None,
-                                      model_name: Optional[str] = None, service_account_name: str = 'minio30sa',
+                                      model_name: Optional[str] = None, service_account_name: str = 'kserve-sa',
                                       model_format: str = 'mlflow',
-                                      protocol_version: str = 'v1') -> Optional[V1beta1InferenceService]:
+                                      protocol_version: str = 'v2') -> Optional[V1beta1InferenceService]:
+
         try:
-            if model_format != 'mlflow':
-                return None
-            protocol_version = 'v2'
-            if storage_uri is None:
-                if model_name is None:
-                    return None
+            if model_name is not None and model_format == 'mlflow' and protocol_version == 'v2':
                 storage_uri = self.get_latest_model_version_storage_uri(model_name)
 
             if storage_uri is None:
@@ -66,7 +62,9 @@ class KServeService:
 
             i_svc = V1beta1InferenceService(api_version=constants.KSERVE_V1BETA1,
                                             kind=constants.KSERVE_KIND,
-                                            metadata=client.V1ObjectMeta(name=name, namespace=namespace),
+                                            metadata=client.V1ObjectMeta(name=name, namespace=namespace,
+                                                                         annotations={
+                                                                             'sidecar.istio.io/inject': 'false'}),
                                             spec=default_model_spec)
 
             return i_svc
@@ -74,8 +72,8 @@ class KServeService:
             raise KServeApiError(e)
 
     def create_inference_service(self, name: str, namespace: str, storage_uri: str = None, model_name: str = None,
-                                 service_account_name: str = 'minio30sa',
-                                 model_format: str = 'mlflow', protocol_version: str = 'v1'):
+                                 service_account_name: str = 'kserve-sa',
+                                 model_format: str = 'mlflow', protocol_version: str = 'v2'):
         try:
             i_svc_info = self.create_inference_service_info(name, namespace, storage_uri=storage_uri,
                                                             model_name=model_name,
@@ -97,8 +95,8 @@ class KServeService:
             raise KServeApiError(e)
 
     def patch_inference_service(self, name: str, namespace: str, storage_uri: str = None, model_name: str = None,
-                                service_account_name: str = 'minio30sa',
-                                model_format: str = 'mlflow', protocol_version: str = 'v1'):
+                                service_account_name: str = 'kserve-sa',
+                                model_format: str = 'mlflow', protocol_version: str = 'v2'):
         try:
             i_svc_info = self.create_inference_service_info(name, namespace, storage_uri=storage_uri,
                                                             model_name=model_name,
@@ -113,8 +111,8 @@ class KServeService:
             raise KServeApiError(e)
 
     def replace_inference_service(self, name: str, namespace: str, storage_uri: str = None, model_name: str = None,
-                                  service_account_name: str = 'minio30sa',
-                                  model_format: str = 'mlflow', protocol_version: str = 'v1'):
+                                  service_account_name: str = 'kserve-sa',
+                                  model_format: str = 'mlflow', protocol_version: str = 'v2'):
         try:
             i_svc_info = self.create_inference_service_info(name, namespace, storage_uri=storage_uri,
                                                             model_name=model_name,

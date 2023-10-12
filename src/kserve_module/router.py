@@ -21,6 +21,7 @@ async def create_inference_service(inference_service_info: InferenceServiceInfo)
                                     inference_service_info.name,
                                     inference_service_info.namespace,
                                     storage_uri=inference_service_info.storage_uri,
+                                    model_name=inference_service_info.model_name,
                                     service_account_name=inference_service_info.service_account_name,
                                     model_format=inference_service_info.model_format,
                                     protocol_version=inference_service_info.protocol_version))
@@ -33,6 +34,7 @@ async def patch_inference_service(inference_service_info: InferenceServiceInfo):
                                     inference_service_info.name,
                                     inference_service_info.namespace,
                                     storage_uri=inference_service_info.storage_uri,
+                                    model_name=inference_service_info.model_name,
                                     service_account_name=inference_service_info.service_account_name,
                                     model_format=inference_service_info.model_format,
                                     protocol_version=inference_service_info.protocol_version))
@@ -45,6 +47,7 @@ async def replace_inference_service(inference_service_info: InferenceServiceInfo
                                     inference_service_info.name,
                                     inference_service_info.namespace,
                                     storage_uri=inference_service_info.storage_uri,
+                                    model_name=inference_service_info.model_name,
                                     service_account_name=inference_service_info.service_account_name,
                                     model_format=inference_service_info.model_format,
                                     protocol_version=inference_service_info.protocol_version))
