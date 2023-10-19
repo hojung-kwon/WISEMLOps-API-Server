@@ -18,10 +18,10 @@ local:
 
 container:
   CLUSTER:
-    HOST: 'https://a68c776cfc52d4322b249b4f13269b3b-1943827563.ap-northeast-2.elb.amazonaws.com'
-    KUBE_CONFIG_PATH: '/home/wisenut/app/certs/kubeconfig'
-    VOLUME_NFS_SERVER: '1B3DEBEBA1D6063A068132F4E339F80C.yl4.ap-northeast-2.eks.amazonaws.com'
-    VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
+    HOST: ''
+    KUBE_CONFIG_PATH: '/home/wisenut/app/certs/config'
+    VOLUME_NFS_SERVER: ''
+    VOLUME_NFS_PATH: ''
   KUBEFLOW:
     PIPELINES:
       ENDPOINT: 'http://ml-pipeline.kubeflow.svc.cluster.local:8888'
