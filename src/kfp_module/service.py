@@ -142,7 +142,7 @@ class KfpService:
                                                  "key": "storage_state",
                                                  "stringValue": "ARCHIVED",
                                              }]
-                                         })).to_dict()
+                                         }))
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -155,7 +155,7 @@ class KfpService:
                                                  "key": "storage_state",
                                                  "stringValue": "AVAILABLE",
                                              }]
-                                         })).to_dict()
+                                         }))
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 

@@ -56,12 +56,12 @@ async def get_experiment(experiment_id: str):
     return Response.from_result(MODULE_CODE, kfp_service.get_experiment(experiment_id=experiment_id))
 
 
-@router.get("/experiments/{experiment_id}/archive", tags=["kfp"], response_model=Response)
+@router.patch("/experiments/{experiment_id}/archive", tags=["kfp"], response_model=Response)
 async def archive_experiment(experiment_id: str):
     return Response.from_result(MODULE_CODE, kfp_service.archive_experiment(experiment_id=experiment_id))
 
 
-@router.get("/experiments/{experiment_id}/unarchive", tags=["kfp"], response_model=Response)
+@router.patch("/experiments/{experiment_id}/unarchive", tags=["kfp"], response_model=Response)
 async def unarchive_experiment(experiment_id: str):
     return Response.from_result(MODULE_CODE, kfp_service.unarchive_experiment(experiment_id=experiment_id))
 
