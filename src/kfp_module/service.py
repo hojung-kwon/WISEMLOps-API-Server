@@ -1,21 +1,22 @@
 import base64
 import json
 import time
-from typing import Optional, Dict, Any
+from typing import Optional
 
 from kfp import Client
-from kfp.components import base_component
+from kfp.dsl import base_component
 from kfp_server_api import ApiException as KFPApiException
-from kfp_server_api.api import RunServiceApi, ExperimentServiceApi, PipelineServiceApi, \
-    PipelineUploadServiceApi, HealthzServiceApi
-from kfp_server_api.api_client import ApiClient
-from kfp_server_api.configuration import Configuration
+# from kfp_server_api.api import RunServiceApi, ExperimentServiceApi, PipelineServiceApi, \
+#     PipelineUploadServiceApi, HealthzServiceApi
+# from kfp_server_api.api_client import ApiClient
+# from kfp_server_api.configuration import Configuration
 from kubernetes import config, client
 from kubernetes.client import ApiException as KubernetesApiException
 from kubernetes.client import AuthenticationV1TokenRequest, V1ObjectMeta, V1TokenRequestSpec
 
 from src.kfp_module.exceptions import KFPApiError
-from src.kfp_module.schemas import Experiment, Pipeline, PipelineVersion, Run, RecurringRun
+from src.kfp_module.schemas import Experiment, Pipeline, PipelineVersion, Run, RecurringRun, RunPipelinePackage, \
+    RunPipelineBase
 
 
 class KfpService:
@@ -71,51 +72,45 @@ class KfpService:
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def get_api_client(self):
-        try:
-            kfp_config = Configuration()
-            kfp_config.host = self.host
-            kfp_config.api_key['authorization'] = self.get_token()
-            kfp_config.api_key_prefix['authorization'] = 'Bearer'
-            return ApiClient(kfp_config)
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    # def get_job_api(self):
+    # def get_api_client(self):
     #     try:
-    #         return JobServiceApi(self.get_api_client())
+    #         kfp_config = Configuration()
+    #         kfp_config.host = self.host
+    #         kfp_config.api_key['authorization'] = self.get_token()
+    #         kfp_config.api_key_prefix['authorization'] = 'Bearer'
+    #         return ApiClient(kfp_config)
     #     except KFPApiException or KubernetesApiException as e:
     #         raise KFPApiError(e)
-
-    def get_run_api(self):
-        try:
-            return RunServiceApi(self.get_api_client())
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_experiment_api(self):
-        try:
-            return ExperimentServiceApi(self.get_api_client())
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_pipelines_api(self):
-        try:
-            return PipelineServiceApi(self.get_api_client())
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_upload_api(self):
-        try:
-            return PipelineUploadServiceApi(self.get_api_client())
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_healthz_api(self):
-        try:
-            return HealthzServiceApi(self.get_api_client())
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
+    #
+    # def get_run_api(self):
+    #     try:
+    #         return RunServiceApi(self.get_api_client())
+    #     except KFPApiException or KubernetesApiException as e:
+    #         raise KFPApiError(e)
+    #
+    # def get_experiment_api(self):
+    #     try:
+    #         return ExperimentServiceApi(self.get_api_client())
+    #     except KFPApiException or KubernetesApiException as e:
+    #         raise KFPApiError(e)
+    #
+    # def get_pipelines_api(self):
+    #     try:
+    #         return PipelineServiceApi(self.get_api_client())
+    #     except KFPApiException or KubernetesApiException as e:
+    #         raise KFPApiError(e)
+    #
+    # def get_upload_api(self):
+    #     try:
+    #         return PipelineUploadServiceApi(self.get_api_client())
+    #     except KFPApiException or KubernetesApiException as e:
+    #         raise KFPApiError(e)
+    #
+    # def get_healthz_api(self):
+    #     try:
+    #         return HealthzServiceApi(self.get_api_client())
+    #     except KFPApiException or KubernetesApiException as e:
+    #         raise KFPApiError(e)
 
     def get_kfp_healthz(self):
         try:
@@ -129,10 +124,38 @@ class KfpService:
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def list_experiments(self, page_token: str = '', page_size: int = 10, sort_by: str = ''):
+    def list_experiments(self, filter_option: Optional[str] = None, page_token: str = '', page_size: int = 10,
+                         sort_by: str = ''):
         try:
             return self.get_kfp_client().list_experiments(page_token=page_token, page_size=page_size, sort_by=sort_by,
+                                                          filter=filter_option,
                                                           namespace=self.namespace).to_dict()
+        except KFPApiException or KubernetesApiException as e:
+            raise KFPApiError(e)
+
+    def list_archive_experiments(self, page_token: str = '', page_size: int = 10, sort_by: str = ''):
+        try:
+            return self.list_experiments(page_token=page_token, page_size=page_size, sort_by=sort_by,
+                                         filter_option=json.dumps({
+                                             "predicates": [{
+                                                 "operation": "EQUALS",
+                                                 "key": "storage_state",
+                                                 "stringValue": "ARCHIVED",
+                                             }]
+                                         })).to_dict()
+        except KFPApiException or KubernetesApiException as e:
+            raise KFPApiError(e)
+
+    def list_unarchive_experiments(self, page_token: str = '', page_size: int = 10, sort_by: str = ''):
+        try:
+            return self.list_experiments(page_token=page_token, page_size=page_size, sort_by=sort_by,
+                                         filter_option=json.dumps({
+                                             "predicates": [{
+                                                 "operation": "EQUALS",
+                                                 "key": "storage_state",
+                                                 "stringValue": "AVAILABLE",
+                                             }]
+                                         })).to_dict()
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -152,13 +175,19 @@ class KfpService:
 
     def archive_experiment(self, experiment_id: str):
         try:
-            return self.get_kfp_client().archive_experiment(experiment_id)
+            return self.get_kfp_client().archive_experiment(experiment_id=experiment_id)
+        except KFPApiException or KubernetesApiException as e:
+            raise KFPApiError(e)
+
+    def unarchive_experiment(self, experiment_id: str):
+        try:
+            return self.get_kfp_client().unarchive_experiment(experiment_id=experiment_id)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
     def delete_experiment(self, experiment_id: str):
         try:
-            return self.get_kfp_client().delete_experiment(experiment_id)
+            return self.get_kfp_client().delete_experiment(experiment_id=experiment_id)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -179,7 +208,19 @@ class KfpService:
 
     def get_pipeline(self, pipeline_id: str):
         try:
-            return self.get_kfp_client().get_pipeline(pipeline_id).to_dict()
+            return self.get_kfp_client().get_pipeline(pipeline_id=pipeline_id).to_dict()
+        except KFPApiException or KubernetesApiException as e:
+            raise KFPApiError(e)
+
+    def delete_pipeline(self, pipeline_id: str):
+        try:
+            return self.get_kfp_client().delete_pipeline(pipeline_id=pipeline_id)
+        except KFPApiException or KubernetesApiException as e:
+            raise KFPApiError(e)
+
+    def get_pipeline_id(self, name: Optional[str]):
+        try:
+            return self.get_kfp_client().get_pipeline_id(name)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -188,18 +229,6 @@ class KfpService:
         try:
             return self.get_kfp_client().list_pipeline_versions(pipeline_id=pipeline_id, page_token=page_token,
                                                                 page_size=page_size, sort_by=sort_by).to_dict()
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def delete_pipeline(self, pipeline_id: str):
-        try:
-            return self.get_kfp_client().delete_pipeline(pipeline_id)
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_pipeline_id(self, name: Optional[str]):
-        try:
-            return self.get_kfp_client().get_pipeline_id(name)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -214,27 +243,17 @@ class KfpService:
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def delete_pipeline_version(self, version_id: str):
+    def delete_pipeline_version(self, pipeline_id: str, version_id: str):
         try:
-            return self.get_kfp_client().delete_pipeline_version(version_id)
+            return self.get_kfp_client().delete_pipeline_version(pipeline_id=pipeline_id,
+                                                                 pipeline_version_id=version_id)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def get_pipeline_template(self, pipeline_id: str):
+    def get_pipeline_version(self, pipeline_id: str, version_id: str):
         try:
-            return self.get_pipelines_api().get_template(id=pipeline_id)
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_pipeline_version(self, version_id: str):
-        try:
-            return self.get_pipelines_api().get_pipeline_version(version_id=version_id)
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_pipeline_version_template(self, pipeline_id: str):
-        try:
-            return self.get_pipelines_api().get_pipeline_version_template(version_id=pipeline_id)
+            return self.get_kfp_client().get_pipeline_version(pipeline_id=pipeline_id,
+                                                              pipeline_version_id=version_id).to_dict()
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -247,7 +266,21 @@ class KfpService:
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def create_run_from_pipeline_package(self, run: Run):
+    def run_pipeline(self, run: Run):
+        try:
+            return self.get_kfp_client().run_pipeline(experiment_id=run.experiment_id,
+                                                      job_name=run.job_name,
+                                                      pipeline_package_path=run.pipeline_package_path,
+                                                      params=run.params,
+                                                      pipeline_id=run.pipeline_id,
+                                                      version_id=run.version_id,
+                                                      pipeline_root=run.pipeline_root,
+                                                      enable_caching=run.enable_caching,
+                                                      service_account=self.sa_name)
+        except KFPApiException or KubernetesApiException as e:
+            raise KFPApiError(e)
+
+    def create_run_from_pipeline_package(self, run: RunPipelinePackage):
         try:
             return self.get_kfp_client().create_run_from_pipeline_package(pipeline_file=run.pipeline_file,
                                                                           arguments=run.arguments,
@@ -256,7 +289,22 @@ class KfpService:
                                                                           namespace=self.namespace,
                                                                           pipeline_root=run.pipeline_root,
                                                                           enable_caching=run.enable_caching,
-                                                                          service_account=self.sa_name)
+                                                                          service_account=self.sa_name,
+                                                                          experiment_id=run.experiment_id)
+        except KFPApiException or KubernetesApiException as e:
+            raise KFPApiError(e)
+
+    def create_run_from_pipeline_func(self, pipeline_func: base_component.BaseComponent, run: RunPipelineBase):
+        try:
+            return self.get_kfp_client().create_run_from_pipeline_func(pipeline_func=pipeline_func,
+                                                                       arguments=run.arguments,
+                                                                       run_name=run.run_name,
+                                                                       experiment_name=run.experiment_name,
+                                                                       namespace=self.namespace,
+                                                                       pipeline_root=run.pipeline_root,
+                                                                       enable_caching=run.enable_caching,
+                                                                       service_account=self.sa_name,
+                                                                       experiment_id=run.experiment_id)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -268,7 +316,7 @@ class KfpService:
 
     def wait_for_run_completion(self, run_id: str, timeout: int):
         try:
-            return self.get_kfp_client().wait_for_run_completion(run_id, timeout=timeout)
+            return self.get_kfp_client().wait_for_run_completion(run_id, timeout=timeout).to_dict()
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
@@ -303,64 +351,32 @@ class KfpService:
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def get_recurring_run(self, job_id: str):
+    def get_recurring_run(self, recurring_run_id: str):
         try:
-            return self.get_kfp_client().get_recurring_run(job_id).to_dict()
+            return self.get_kfp_client().get_recurring_run(recurring_run_id=recurring_run_id).to_dict()
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def delete_job(self, job_id: str):
+    def delete_recurring_run(self, recurring_run_id: str):
         try:
-            return self.get_kfp_client().delete_job(job_id)
+            return self.get_kfp_client().delete_recurring_run(recurring_run_id=recurring_run_id)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def disable_job(self, job_id: str):
+    def disable_recurring_run(self, recurring_run_id: str):
         try:
-            return self.get_kfp_client().disable_job(job_id)
+            return self.get_kfp_client().disable_recurring_run(recurring_run_id=recurring_run_id)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def run_pipeline(self, experiment_id: str, job_name: str, pipeline_package_path: Optional[str] = None,
-                     params: Optional[dict] = None, pipeline_id: Optional[str] = None,
-                     version_id: Optional[str] = None, pipeline_root: Optional[str] = None,
-                     enable_caching: Optional[str] = None):
+    def enable_recurring_run(self, recurring_run_id: str):
         try:
-            return self.get_kfp_client().run_pipeline(experiment_id=experiment_id, job_name=job_name,
-                                                      pipeline_package_path=pipeline_package_path,
-                                                      params=params, pipeline_id=pipeline_id, version_id=version_id,
-                                                      pipeline_root=pipeline_root, enable_caching=enable_caching,
-                                                      service_account=self.sa_name).to_dict()
+            return self.get_kfp_client().enable_recurring_run(recurring_run_id=recurring_run_id)
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
-    def create_run_from_pipeline_func(self, pipeline_func: base_component.BaseComponent,
-                                      arguments: Optional[Dict[str, Any]] = None,
-                                      run_name: Optional[str] = None,
-                                      experiment_name: Optional[str] = None,
-                                      pipeline_root: Optional[str] = None,
-                                      enable_caching: Optional[bool] = None,
-                                      experiment_id: Optional[str] = None):
-        try:
-            return self.get_kfp_client().create_run_from_pipeline_func(pipeline_func=pipeline_func, arguments=arguments,
-                                                                       run_name=run_name,
-                                                                       experiment_name=experiment_name,
-                                                                       namespace=self.namespace,
-                                                                       pipeline_root=pipeline_root,
-                                                                       enable_caching=enable_caching,
-                                                                       experiment_id=experiment_id,
-                                                                       service_account=self.sa_name)
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def get_run_detail(self, run_id: str):
-        try:
-            return self.get_run_api().get_run(run_id)
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
-
-    def read_artifact(self, run_id: str, node_id: str, artifact_name: str):
-        try:
-            return self.get_run_api().read_artifact(run_id, node_id, artifact_name)
-        except KFPApiException or KubernetesApiException as e:
-            raise KFPApiError(e)
+    # def read_artifact(self, run_id: str, node_id: str, artifact_name: str):
+    #     try:
+    #         return self.get_run_api().read_artifact(run_id, node_id, artifact_name)
+    #     except KFPApiException or KubernetesApiException as e:
+    #         raise KFPApiError(e)

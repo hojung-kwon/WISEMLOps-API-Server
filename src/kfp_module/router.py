@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from src.kfp_module import kfp_service
-from src.kfp_module.schemas import Experiment, Pipeline, PipelineVersion, Run, RecurringRun
+from src.kfp_module.schemas import Experiment, Pipeline, PipelineVersion, Run, RecurringRun, RunPipelinePackage
 from src.kserve_module.config import MODULE_CODE
 from src.response import Response
 
@@ -32,6 +32,20 @@ async def list_experiments(page_token: str = '', page_size: int = 10, sort_by: s
                                                                           sort_by=sort_by))
 
 
+@router.get("/archive-experiments", tags=["kfp"], response_model=Response)
+async def list_archive_experiments(page_token: str = '', page_size: int = 10, sort_by: str = ''):
+    return Response.from_result(MODULE_CODE, kfp_service.list_archive_experiments(page_token=page_token,
+                                                                                  page_size=page_size,
+                                                                                  sort_by=sort_by))
+
+
+@router.get("/unarchive-experiments", tags=["kfp"], response_model=Response)
+async def list_unarchive_experiments(page_token: str = '', page_size: int = 10, sort_by: str = ''):
+    return Response.from_result(MODULE_CODE, kfp_service.list_unarchive_experiments(page_token=page_token,
+                                                                                    page_size=page_size,
+                                                                                    sort_by=sort_by))
+
+
 @router.post("/experiments", tags=["kfp"], response_model=Response)
 async def create_experiment(experiment: Experiment):
     return Response.from_result(MODULE_CODE, kfp_service.create_experiment(experiment))
@@ -45,6 +59,11 @@ async def get_experiment(experiment_id: str):
 @router.get("/experiments/{experiment_id}/archive", tags=["kfp"], response_model=Response)
 async def archive_experiment(experiment_id: str):
     return Response.from_result(MODULE_CODE, kfp_service.archive_experiment(experiment_id=experiment_id))
+
+
+@router.get("/experiments/{experiment_id}/unarchive", tags=["kfp"], response_model=Response)
+async def unarchive_experiment(experiment_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.unarchive_experiment(experiment_id=experiment_id))
 
 
 @router.delete("/experiments/{experiment_id}", tags=["kfp"], response_model=Response)
@@ -69,24 +88,9 @@ async def get_pipeline(pipeline_id: str):
     return Response.from_result(MODULE_CODE, kfp_service.get_pipeline(pipeline_id))
 
 
-@router.get("/pipelines/{pipeline_id}/template", tags=["kfp"], response_model=Response)
-async def get_pipeline_template(pipeline_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.get_pipeline_template(pipeline_id))
-
-
-@router.get("/pipelines/{pipeline_id}/versions", tags=["kfp"], response_model=Response)
-async def list_pipeline_versions(pipeline_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.list_pipeline_versions(pipeline_id))
-
-
 @router.delete("/pipelines/{pipeline_id}", tags=["kfp"], response_model=Response)
 async def delete_pipeline(pipeline_id: str):
     return Response.from_result(MODULE_CODE, kfp_service.delete_pipeline(pipeline_id))
-
-
-@router.get("/pipelines/{pipeline_name}/id", tags=["kfp"], response_model=Response)
-async def get_pipeline_id(pipeline_name: str):
-    return Response.from_result(MODULE_CODE, kfp_service.get_pipeline_id(pipeline_name))
 
 
 @router.post("/pipelines/versions", tags=["kfp"], response_model=Response)
@@ -94,19 +98,19 @@ async def upload_pipeline_version(pipeline_version: PipelineVersion):
     return Response.from_result(MODULE_CODE, kfp_service.upload_pipeline_version(pipeline_version))
 
 
-@router.get("/pipelines/versions/{version_id}", tags=["kfp"], response_model=Response)
-async def get_pipeline_version(version_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.get_pipeline_version(version_id))
+@router.get("/pipelines/versions/{pipeline_id}", tags=["kfp"], response_model=Response)
+async def list_pipeline_versions(pipeline_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.list_pipeline_versions(pipeline_id))
 
 
-@router.get("/pipelines/versions/{version_id}/template", tags=["kfp"], response_model=Response)
-async def get_pipeline_version_template(version_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.get_pipeline_version_template(version_id))
+@router.get("/pipelines/versions/{pipeline_id}/{version_id}", tags=["kfp"], response_model=Response)
+async def get_pipeline_version(pipeline_id: str, version_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.get_pipeline_version(pipeline_id, version_id))
 
 
-@router.delete("/pipelines/versions/{version_id}", tags=["kfp"], response_model=Response)
-async def delete_pipeline_version(version_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.delete_pipeline_version(version_id))
+@router.delete("/pipelines/versions/{pipeline_id}/{version_id}", tags=["kfp"], response_model=Response)
+async def delete_pipeline_version(pipeline_id: str, version_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.delete_pipeline_version(pipeline_id, version_id))
 
 
 @router.get("/runs", tags=["kfp"], response_model=Response)
@@ -118,7 +122,12 @@ async def list_runs(page_token: str = '', page_size: int = 10, sort_by: str = ''
 
 
 @router.post("/runs", tags=["kfp"], response_model=Response)
-async def create_run_from_pipeline_package(run: Run):
+async def run_pipeline(run: Run):
+    return Response.from_result(MODULE_CODE, kfp_service.run_pipeline(run))
+
+
+@router.post("/runs/package", tags=["kfp"], response_model=Response)
+async def create_run_from_pipeline_package(run: RunPipelinePackage):
     return Response.from_result(MODULE_CODE, kfp_service.create_run_from_pipeline_package(run))
 
 
@@ -146,26 +155,21 @@ async def create_recurring_run(recurring_run: RecurringRun):
     return Response.from_result(MODULE_CODE, kfp_service.create_recurring_run(recurring_run))
 
 
-@router.get("/recurring-runs/{job_id}", tags=["kfp"], response_model=Response)
-async def get_recurring_run(job_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.get_recurring_run(job_id))
+@router.get("/recurring-runs/{recurring_run_id}", tags=["kfp"], response_model=Response)
+async def get_recurring_run(recurring_run_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.get_recurring_run(recurring_run_id))
 
 
-@router.delete("/recurring-runs/{job_id}", tags=["kfp"], response_model=Response)
-async def delete_job(job_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.delete_job(job_id))
+@router.delete("/recurring-runs/{recurring_run_id}", tags=["kfp"], response_model=Response)
+async def delete_recurring_run(recurring_run_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.delete_recurring_run(recurring_run_id))
 
 
-@router.patch("/recurring-runs/{job_id}", tags=["kfp"], response_model=Response)
-async def disable_job(job_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.disable_job(job_id))
+@router.patch("/recurring-runs/{recurring_run_id}/disable", tags=["kfp"], response_model=Response)
+async def disable_recurring_run(recurring_run_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.disable_recurring_run(recurring_run_id))
 
 
-@router.get("/artifact/{run_id}/{node_id}/{artifact_name}", tags=["kfp"], response_model=Response)
-async def read_artifact(run_id: str, node_id: str, artifact_name: str):
-    return Response.from_result(MODULE_CODE, kfp_service.read_artifact(run_id, node_id, artifact_name))
-
-
-@router.get("/detail/{run_id}", tags=["kfp"], response_model=Response)
-async def get_run_detail(run_id: str):
-    return Response.from_result(MODULE_CODE, kfp_service.get_run_detail(run_id))
+@router.patch("/recurring-runs/{recurring_run_id}/enable", tags=["kfp"], response_model=Response)
+async def enable_recurring_run(recurring_run_id: str):
+    return Response.from_result(MODULE_CODE, kfp_service.enable_recurring_run(recurring_run_id))

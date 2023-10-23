@@ -1,6 +1,5 @@
 import re
-from typing import Optional, Mapping
-
+from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field, validator
 
 from src.kfp_module.exceptions import RequestValidationError
@@ -69,31 +68,77 @@ class PipelineVersion(BaseModel):
 
 
 class Run(BaseModel):
-    pipeline_file: str = Field(title="Pipeline 패키지 파일 경로", description="A compiled pipeline package file.")
-    arguments: Mapping[str, str] = Field(title="실행 인자",
-                                         description="Arguments to the pipeline function provided as a dict.")
-    run_name: Optional[str] = Field(title="Run 명칭", description="Optional. Name of the run to be shown in the UI.",
-                                    default=None)
-    experiment_name: Optional[str] = Field(title="Experiment 명칭",
-                                           description="Optional. Name of the experiment to add the run to.",
-                                           default=None)
+    experiment_id: str = Field(title="Experiment ID",
+                               description="ID of an experiment.")
+    job_name: str = Field(title="Job 명칭", description="Name of the job.")
+    pipeline_package_path: Optional[str] = Field(title="Pipeline 패키지 파일 경로",
+                                                 description="Local path of the pipeline package"
+                                                             " (the filename should end with one of the following"
+                                                             " .tar.gz, .tgz, .zip, .json).",
+                                                 default=None)
+    params: Optional[Dict[str, Any]] = Field(title="매개 변수",
+                                             description="Arguments to the pipeline function provided as a dict.",
+                                             default=None)
+    pipeline_id: Optional[str] = Field(title="Pipeline 아이디", description="ID of a pipeline.",
+                                       default=None)
+    version_id: Optional[str] = Field(title="Pipeline 버전 아이디",
+                                      description="ID of the pipeline version to run."
+                                                  " If both pipeline_id and version_id are specified, version_id"
+                                                  " will take precendence."
+                                                  " If only pipeline_id is specified, the default version of this"
+                                                  " pipeline is used to create the run.",
+                                      default=None)
     pipeline_root: Optional[str] = Field(title="Pipeline 결과 출력 경로",
-                                         description="The root path of the pipeline outputs. "
-                                                     "This argument should be used only for pipeline compiled with dsl."
-                                                     " PipelineExecutionMode.V2_COMPATIBLE"
-                                                     " or dsl.PipelineExecutionMode.V2_ENGINGE mode.",
+                                         description="Root path of the pipeline outputs.",
                                          default=None)
     enable_caching: Optional[bool] = Field(title="Caching 활성화 여부",
-                                           description="Optional. Whether or not to enable caching for the run."
-                                                       " This setting affects v2 compatible mode and v2 mode only."
+                                           description="Whether or not to enable caching for the run."
                                                        " If not set, defaults to the compile time settings,"
-                                                       " which are True for all"
-                                                       " tasks by default,"
-                                                       " while users may specify different caching options for"
-                                                       " individual tasks."
+                                                       " which is ``True`` for all tasks by default,"
+                                                       " while users may specify different caching options"
+                                                       " for individual tasks."
                                                        " If set, the setting applies to all tasks in the pipeline"
-                                                       " -- overrides the compile time settings.",
+                                                       " (overrides the compile time settings)",
                                            default=None)
+
+    @classmethod
+    @validator('job_name', allow_reuse=True)
+    def validate_name(cls, v):
+        reg = re.compile(r'\W')
+        if reg.match(v):
+            raise RequestValidationError(
+                message="Only alphabetic characters, numbers, and underscores are allowed in the name.",
+                result={"current_name": v}
+            )
+        return v
+
+
+class RunPipelineBase(BaseModel):
+    arguments: Optional[Dict[str, Any]] = Field(title="실행 인자",
+                                                description="Arguments to the pipeline function provided as a dict.",
+                                                default=None)
+    run_name: Optional[str] = Field(title="Run 명칭", description="Name of the run to be shown in the UI.",
+                                    default=None)
+    experiment_name: Optional[str] = Field(title="Experiment 명칭",
+                                           description="Name of the experiment to add the run to."
+                                                       " You cannot specify both experiment_name and experiment_id.",
+                                           default=None)
+    pipeline_root: Optional[str] = Field(title="Pipeline 결과 출력 경로",
+                                         description="Root path of the pipeline outputs.",
+                                         default=None)
+    enable_caching: Optional[bool] = Field(title="Caching 활성화 여부",
+                                           description="Whether or not to enable caching for the run."
+                                                       " If not set, defaults to the compile time settings,"
+                                                       " which is ``True`` for all tasks by default,"
+                                                       " while users may specify different caching options"
+                                                       " for individual tasks."
+                                                       " If set, the setting applies to all tasks in the pipeline"
+                                                       " (overrides the compile time settings)",
+                                           default=None)
+    experiment_id: Optional[str] = Field(title="Experiment ID",
+                                         description="ID of the experiment to add the run to."
+                                                     " You cannot specify both experiment_id and experiment_name.",
+                                         default=None)
 
     @classmethod
     @validator('run_name', allow_reuse=True)
@@ -108,15 +153,19 @@ class Run(BaseModel):
         return v
 
 
+class RunPipelinePackage(RunPipelineBase):
+    pipeline_file: str = Field(title="Pipeline 패키지 파일 경로", description="A compiled pipeline package file.")
+
+
 class RecurringRun(BaseModel):
     experiment_id: str = Field(title="Experiment 아이디", description="The string id of an experiment.")
     job_name: str = Field(title="Job 명칭", description="Name of the job.")
     description: Optional[str] = Field(title="Job 설명", description="An optional job description.", default=None)
     start_time: Optional[str] = Field(title="시작 시간",
-                                      description="The RFC3339 time string of the time when to start the job.",
+                                      description="RFC3339 time string of the time when to start the job.",
                                       default=None)
     end_time: Optional[str] = Field(title="종료 시간",
-                                    description="The RFC3339 time string of the time when to end the job.",
+                                    description="RFC3339 time string of the time when to end the job.",
                                     default=None)
     interval_second: Optional[int] = Field(title="시간 간격",
                                            description="Integer indicating the seconds"
@@ -144,37 +193,37 @@ class RecurringRun(BaseModel):
                                                    " you should turn catchup off to avoid duplicate back fill."
                                                    " (default: {False})",
                                        default=None)
-    params: Optional[dict] = Field(title="매개 변수",
-                                   description="A dictionary with key (string) as param name"
-                                               " and value (string) as param value.",
-                                   default=None)
     pipeline_package_path: Optional[str] = Field(title="Pipeline 패키지 파일 경로",
                                                  description="Local path of the pipeline package"
                                                              " (the filename should end with one of the following"
-                                                             " .tar.gz, .tgz, .zip, .yaml, .yml).",
+                                                             " .tar.gz, .tgz, .zip, .json).",
                                                  default=None)
-    pipeline_id: Optional[str] = Field(title="Pipeline 아이디", description="The id of a pipeline.",
+    params: Optional[dict] = Field(title="매개 변수",
+                                   description="Arguments to the pipeline function provided as a dict.",
+                                   default=None)
+    pipeline_id: Optional[str] = Field(title="Pipeline 아이디", description="ID of a pipeline.",
                                        default=None)
     version_id: Optional[str] = Field(title="Pipeline 버전 아이디",
-                                      description="The id of a pipeline version."
-                                                  " If both pipeline_id and version_id are specified,"
-                                                  " version_id will take precedence."
-                                                  " If only pipeline_id is specified,"
+                                      description="ID of a pipeline version."
+                                                  " If both ``pipeline_id`` and ``version_id`` are specified,"
+                                                  " ``version_id`` will take precedence."
+                                                  " If only ``pipeline_id`` is specified,"
                                                   " the default version of this pipeline is used to create the run.",
                                       default=None)
     enabled: bool = Field(title="반복 실행 활성화 여부",
-                          description="A bool indicating whether the recurring run is enabled or disabled.",
+                          description="Whether to enable or disable the recurring run.",
                           default=True)
+    pipeline_root: Optional[str] = Field(title="Pipeline 결과 출력 경로",
+                                         description="Root path of the pipeline outputs.",
+                                         default=None)
     enable_caching: Optional[bool] = Field(title="Caching 활성화 여부",
-                                           description="Optional. Whether or not to enable caching for the run."
-                                                       " This setting affects v2 compatible mode and v2 mode only."
+                                           description="Whether or not to enable caching for the run."
                                                        " If not set, defaults to the compile time settings,"
-                                                       " which are True for all"
-                                                       " tasks by default,"
-                                                       " while users may specify different caching options for"
-                                                       " individual tasks."
+                                                       " which is ``True`` for all tasks by default,"
+                                                       " while users may specify different caching options"
+                                                       " for individual tasks."
                                                        " If set, the setting applies to all tasks in the pipeline"
-                                                       " -- overrides the compile time settings.",
+                                                       " (overrides the compile time settings)",
                                            default=None)
 
     @classmethod
