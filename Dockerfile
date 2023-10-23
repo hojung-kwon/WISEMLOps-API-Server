@@ -17,9 +17,7 @@ WORKDIR /home/wisenut/app
 ENV PYTHONPATH=/home/wisenut/app:${PYTHONPATH}
 
 # 필요한 파일 복사
-COPY requirements.txt .
-COPY ./application.yaml .
-COPY ./src ./src/
+COPY . .
 
 # 패키지 설치
 RUN pip install --no-cache-dir -r requirements.txt
