@@ -1,14 +1,14 @@
 local:
   CLUSTER:
-    HOST: 'https://a68c776cfc52d4322b249b4f13269b3b-1943827563.ap-northeast-2.elb.amazonaws.com'
+    HOST: 'https://a80fe9e6b06c24bee94be3af2d93c22e-1779732805.ap-northeast-2.elb.amazonaws.com'
     KUBE_CONFIG_PATH: 'D:\PycharmProjects\MLOps-API\certs\kubeconfig'
     VOLUME_NFS_SERVER: '1B3DEBEBA1D6063A068132F4E339F80C.yl4.ap-northeast-2.eks.amazonaws.com'
     VOLUME_NFS_PATH: '/home/wisenut/nfs4share'
   KUBEFLOW:
     PIPELINES:
-      ENDPOINT: 'http://a2539c868cc0f49c990d01ed03da9874-1862536976.ap-northeast-2.elb.amazonaws.com:8888'
+      ENDPOINT: 'http://a8e559c417474471192fda467f27528f-808188920.ap-northeast-2.elb.amazonaws.com:8888'
   MINIO:
-    ENDPOINT: 'http://a24c6c94964e2427ea9451a30fbed2d1-616468795.ap-northeast-2.elb.amazonaws.com:9000'
+    ENDPOINT: 'http://ae838404cb4e94d38bd3c4986bde5b4c-2058643848.ap-northeast-2.elb.amazonaws.com:9000'
     ACCESS_KEY: 'minio'
     SECRET_KEY: 'minio123'
   MLFLOW:
