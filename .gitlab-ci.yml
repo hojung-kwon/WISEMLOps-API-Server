@@ -1,29 +1,13 @@
-image: python:3.9-slim
-
 stages:
   - build
   - test
   - deploy
 
-variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  MAJOR: "1"
-  PIPELINE_SEQUENCE: $CI_PIPELINE_IID
-
-before_script:
-  - python3 -V
-  - pip install --upgrade pip
-  - pip install virtualenv
-  - virtualenv venv
-  - source venv/bin/activate
-
-
-build-job:
-  stage: build
-  script:
-    - pip3 install build wheel
-    - python3 -m build . --wheel
-
+#build-job:
+#  stage: build
+#  script:
+#    - pip3 install build wheel
+#    - python3 -m build . --wheel
 
 #unit-test-job:
 #  stage: test
@@ -33,26 +17,22 @@ build-job:
 
 lint-test-job:
   stage: test
+  image: python:3.9-slim
   script:
     - pip3 install build flake8
     - python3 -m flake8
 
 deploy-gitlab-job:
-  image: docker:23.0.1
   stage: deploy
+  image: docker:stable
   services:
-    - docker:23.0.1-dind
-
-  variables:
-    PROJECT_NAME: "MLOps-API"
-    MAJOR: "1"
-    PIPELINE_SEQUENCE: $CI_PIPELINE_IID
+    - docker:dind
 
   before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
     - BUILD_DATE=$(date +%Y-%m%d-%H%M)
   script:
     - pwd
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $CI_REGISTRY_IMAGE/mlops-api:$BUILD_DATE-$CI_COMMIT_SHORT_SHA  .
     - docker push $CI_REGISTRY_IMAGE/mlops-api:$BUILD_DATE-$CI_COMMIT_SHORT_SHA
     - docker build -t $CI_REGISTRY_IMAGE/mlops-api:latest  .
