@@ -115,7 +115,7 @@ app.include_router(common_router.router)
 
 
 @app.exception_handler(ValueError)
-async def http_exception_handler(request: Request, exc: ValueError):
+async def value_error_handler(request: Request, exc: ValueError):
     return JSONResponse(
         status_code=200,
         content={
