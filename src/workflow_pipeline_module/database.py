@@ -1,8 +1,16 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.workflow_pipeline_module import models
 from src.workflow_pipeline_module.config import get_sqlalchemy_database_url
+
+
+parent_path = os.path.dirname(get_sqlalchemy_database_url().replace("sqlite:///", ""))
+
+if not os.path.exists(parent_path):
+    os.makedirs(parent_path)
 
 engine = create_engine(
     get_sqlalchemy_database_url(), connect_args={"check_same_thread": False}
