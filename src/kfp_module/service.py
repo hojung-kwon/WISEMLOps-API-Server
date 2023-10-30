@@ -285,7 +285,6 @@ class KfpService:
             return self.get_kfp_client().create_run_from_pipeline_package(pipeline_file=run.pipeline_file,
                                                                           arguments=run.arguments,
                                                                           run_name=run.run_name,
-                                                                          experiment_name=run.experiment_name,
                                                                           namespace=self.namespace,
                                                                           pipeline_root=run.pipeline_root,
                                                                           enable_caching=run.enable_caching,
