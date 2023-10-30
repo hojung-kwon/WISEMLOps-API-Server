@@ -32,4 +32,4 @@ container:
   MLFLOW:
     TRACKING_URI: 'http://custom-mlflow-service.mlflow-system.svc.cluster.local:5000'
   DATABASE:
-    SQLALCHEMY_DATABASE_URL: "sqlite:///../sqlite/sql_app.db"
+    SQLALCHEMY_DATABASE_URL: "sqlite:///./sqlite/sql_app.db"
