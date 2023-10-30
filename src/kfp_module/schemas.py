@@ -119,10 +119,10 @@ class RunPipelineBase(BaseModel):
                                                 default=None)
     run_name: Optional[str] = Field(title="Run 명칭", description="Name of the run to be shown in the UI.",
                                     default=None)
-    experiment_name: Optional[str] = Field(title="Experiment 명칭",
-                                           description="Name of the experiment to add the run to."
-                                                       " You cannot specify both experiment_name and experiment_id.",
-                                           default=None)
+    # experiment_name: Optional[str] = Field(title="Experiment 명칭",
+    #                                        description="Name of the experiment to add the run to."
+    #                                                    " You cannot specify both experiment_name and experiment_id.",
+    #                                        default=None)
     pipeline_root: Optional[str] = Field(title="Pipeline 결과 출력 경로",
                                          description="Root path of the pipeline outputs.",
                                          default=None)
