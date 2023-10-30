@@ -114,6 +114,18 @@ app.include_router(pipeline_router.router)
 app.include_router(common_router.router)
 
 
+@app.exception_handler(ValueError)
+async def http_exception_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": int(str(app_config.SERVICE_CODE) + str(status.HTTP_400_BAD_REQUEST)),
+            "message": f"Invalid Request: Value Error.",
+            "result": exc.args
+        }
+    )
+
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(
