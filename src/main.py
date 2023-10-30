@@ -120,7 +120,7 @@ async def http_exception_handler(request: Request, exc: ValueError):
         status_code=200,
         content={
             "code": int(str(app_config.SERVICE_CODE) + str(status.HTTP_400_BAD_REQUEST)),
-            "message": f"Invalid Request: Value Error.",
+            "message": "Invalid Request: Value Error.",
             "result": exc.args
         }
     )
