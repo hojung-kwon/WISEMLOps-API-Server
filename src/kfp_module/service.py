@@ -276,7 +276,7 @@ class KfpService:
                                                       version_id=run.version_id,
                                                       pipeline_root=run.pipeline_root,
                                                       enable_caching=run.enable_caching,
-                                                      service_account=self.sa_name)
+                                                      service_account=self.sa_name).to_dict()
         except KFPApiException or KubernetesApiException as e:
             raise KFPApiError(e)
 
