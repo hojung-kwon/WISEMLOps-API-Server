@@ -152,6 +152,11 @@ async def get_services(namespace: str = 'default'):
     return Response.from_result(MODULE_CODE, cluster_service.get_services(namespace))
 
 
+@router.get("/namespaces/{namespace}/services/{name}", tags=["service"], response_model=Response)
+async def get_service(namespace: str, name: str):
+    return Response.from_result(MODULE_CODE, cluster_service.get_service(namespace, name))
+
+
 @router.post("/namespaces/{namespace}/services", tags=["service"], response_model=Response)
 async def create_service(namespace: str, service: Service):
     return Response.from_result(MODULE_CODE, cluster_service.create_service(namespace, service))

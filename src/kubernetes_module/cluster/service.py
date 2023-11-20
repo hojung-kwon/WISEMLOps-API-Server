@@ -248,6 +248,13 @@ class ClusterService:
         except ApiException as e:
             raise KubernetesApiError(e)
 
+    def get_service(self, namespace: str = 'default', name: str = ''):
+        try:
+            result = self.cluster_client.read_namespaced_service(namespace=namespace, name=name)
+            return render(result, Render.to_service_status)
+        except ApiException as e:
+            raise KubernetesApiError(e)
+
     def create_service(self, namespace: str, service: Service):
         try:
             body = Factory.build_service(service)
