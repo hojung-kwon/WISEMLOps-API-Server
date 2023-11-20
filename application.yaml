@@ -18,7 +18,7 @@ local:
 
 container:
   CLUSTER:
-    HOST: 'aadbf3bc2e2ba4930b0ca57ca004186a-354198293.ap-northeast-2.elb.amazonaws.com'
+    HOST: 'https://aadbf3bc2e2ba4930b0ca57ca004186a-354198293.ap-northeast-2.elb.amazonaws.com'
     KUBE_CONFIG_PATH: '/home/wisenut/app/certs/config'
     VOLUME_NFS_SERVER: ''
     VOLUME_NFS_PATH: ''
